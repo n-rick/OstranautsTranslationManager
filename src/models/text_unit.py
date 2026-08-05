@@ -13,7 +13,7 @@ class TextUnit:
     source_file: str
     json_path: str
     field: str
-    english: str
-    french: str = ""
+    source_text: str
+    translated_text: str = ""
     status: TranslationStatus = TranslationStatus.NEW
     comment: str = ""

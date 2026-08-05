@@ -1,0 +1,19 @@
+{
+    "strTitle": "Repair",
+    "strDesc": "[us] repairs the engine.",
+    "number": 12,
+    "enabled": true,
+    "children": [
+        {
+            "strBody": "Open the airlock."
+        },
+        {
+            "aValues": [
+                "ENGINE",
+                "Engine",
+                "REACTOR",
+                "Reactor"
+            ]
+        }
+    ]
+}
