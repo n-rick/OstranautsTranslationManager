@@ -1,3 +1,5 @@
+"""Point d'entrée principal de l'application de traduction."""
+
 from config.config import Config
 from database.database import Database
 from scanner.scanner import Scanner
@@ -7,6 +9,7 @@ from translation_manager import TranslationManager
 
 
 def main() -> None:
+    """Initialise les composants et lance le processus de traduction."""
 
     manager = TranslationManager(
         scanner=Scanner(),

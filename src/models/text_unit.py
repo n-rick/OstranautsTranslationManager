@@ -1,3 +1,5 @@
+"""Modèle représentant une unité de texte à traduire."""
+
 from dataclasses import dataclass
 
 from models.translation_status import TranslationStatus
@@ -5,9 +7,7 @@ from models.translation_status import TranslationStatus
 
 @dataclass
 class TextUnit:
-    """
-    Represents a translatable text extracted from a game file.
-    """
+    """Représente un texte extraits d'un fichier JSON à traduire."""
 
     uid: str
     source_file: str

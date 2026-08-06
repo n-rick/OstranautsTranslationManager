@@ -1,3 +1,5 @@
+"""Chargement de la configuration de l'application à partir des variables d'environnement."""
+
 from pathlib import Path
 from dotenv import load_dotenv
 import os
@@ -7,6 +9,8 @@ load_dotenv(".env.local", override=True)
 
 
 class Config:
+    """Contient les paramètres globaux utilisés par l'application."""
+
     OSTRANAUTS_DATA_PATH = Path(os.getenv("OSTRANAUTS_DATA_PATH", ""))
     OUTPUT_PATH = Path(os.getenv("OUTPUT_PATH", "./output"))
     REPORT_PATH = Path(os.getenv("REPORT_PATH", "./reports"))

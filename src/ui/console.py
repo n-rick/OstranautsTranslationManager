@@ -1,10 +1,14 @@
+"""Interface utilisateur en console pour la revue des traductions."""
+
 from models.text_unit import TextUnit
 from config.config import Config
 
 
 class ConsoleUI:
+    """Affiche une unité de texte et propose des actions de revue."""
 
     def review(self, unit: TextUnit) -> str:
+        """Affiche les détails d'une unité et retourne la décision utilisateur."""
 
         print("\n" + "=" * 70)
         print(f"File : {unit.source_file}")

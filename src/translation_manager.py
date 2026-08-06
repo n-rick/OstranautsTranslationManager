@@ -1,3 +1,5 @@
+"""Gestion du flux principal de traduction des unités de texte."""
+
 from database.database import Database
 from scanner.scanner import Scanner
 from config.config import Config
@@ -8,7 +10,8 @@ from models.text_unit import TextUnit
 
 
 class TranslationManager:
-    
+    """Orchestre l'analyse, la traduction et la sauvegarde des textes."""
+
     def __init__(
         self,
         scanner: Scanner,
@@ -16,6 +19,7 @@ class TranslationManager:
         translator: Translator,
         console: ConsoleUI
     ) -> None:
+        """Initialise les dépendances du gestionnaire et ses compteurs."""
         self.scanner = scanner
         self.database = database
         self.translator = translator
@@ -24,6 +28,7 @@ class TranslationManager:
         self.translated_count = 0
 
     def run(self, directory: str) -> list[TextUnit]:
+        """Exécute le processus complet de traduction pour un répertoire donné."""
 
         units = self.scanner.scan(directory)
 
@@ -43,7 +48,7 @@ class TranslationManager:
                     unit.translated_text = input(f"\n {Config.NEW_TRANSLATION} : ")
                 elif choice == ReviewAction.QUIT:
                     break
-                
+
                 self.database.update(unit)
                 self.translated_count += 1
 
