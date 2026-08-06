@@ -27,7 +27,7 @@ class Database:
                 indent=4,
             )
     
-    def add(self, unit: TextUnit) -> None:
+    def update(self, unit: TextUnit) -> None:
         self.memory["translations"][unit.uid] = {
             "source_text": unit.source_text,
             "translated_text": unit.translated_text,

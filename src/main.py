@@ -1,6 +1,7 @@
 from scanner.scanner import Scanner
 from config.config import Config
 from database.database import Database
+from translator.google_translator import GoogleTranslatorService
 
 
 def main() -> None:
@@ -12,17 +13,20 @@ def main() -> None:
     print(f"Text units    : {len(units)}")
 
     database = Database(Config.DATABASE_PATH)
-    print(f"Database path : {Config.DATABASE_PATH}")
     database.load()
 
+    translator = GoogleTranslatorService()
+
     for unit in units:
-        if not database.contains(unit.uid):
-            unit.translated_text = unit.source_text  # Temporaire
-            database.add(unit)
+        translation = database.get_translation(unit.uid)
+
+        if translation is not None:
+            unit.translated_text = translation
+        else:
+            translator.translate(unit)
+            database.update(unit)
 
     database.save()
-
-    print(f"Database entries : {len(database.memory['translations'])}")
 
 
 if __name__ == "__main__":

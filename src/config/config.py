@@ -11,3 +11,5 @@ class Config:
     OUTPUT_PATH = Path(os.getenv("OUTPUT_PATH", "./output"))
     REPORT_PATH = Path(os.getenv("REPORT_PATH", "./reports"))
     DATABASE_PATH = Path(os.getenv("DATABASE_PATH", "./database/translation_memory.json"))
+    SOURCE_LANGUAGE = os.getenv("SOURCE_LANGUAGE", "en")
+    TARGET_LANGUAGE = os.getenv("TARGET_LANGUAGE", "")

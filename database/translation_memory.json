@@ -1,32 +1,3 @@
 {
-    "translations": {
-        "5afb0c58c8d59763e97376c64567e637ed792d44": {
-            "source_text": "Repair",
-            "translated_text": "Repair"
-        },
-        "bbfa660d77f9afba73b34e6508e0ccfd83d35d80": {
-            "source_text": "[us] repairs the engine.",
-            "translated_text": "[us] repairs the engine."
-        },
-        "fe34ed74f36d5773b8c733d73887f8575feb979b": {
-            "source_text": "Open the airlock.",
-            "translated_text": "Open the airlock."
-        },
-        "052a98cd976f252619ff2ae2606604ed304e3c60": {
-            "source_text": "ENGINE",
-            "translated_text": "ENGINE"
-        },
-        "0c9e5dbaee1d320886949595ef9c4b996537133d": {
-            "source_text": "Engine",
-            "translated_text": "Engine"
-        },
-        "0bdd75fa8e3534380618db7f3bb5881bfee669e5": {
-            "source_text": "REACTOR",
-            "translated_text": "REACTOR"
-        },
-        "2027a14fd5e8838d2395ada943294b3dbe15163d": {
-            "source_text": "Reactor",
-            "translated_text": "Reactor"
-        }
-    }
+    "translations": {}
 }
