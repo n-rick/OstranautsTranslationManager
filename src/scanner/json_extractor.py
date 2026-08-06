@@ -1,3 +1,5 @@
+"""Extraction des unités de texte depuis des fichiers JSON."""
+
 import json
 import hashlib
 from pathlib import Path
@@ -5,7 +7,10 @@ from models.text_unit import TextUnit
 
 
 class JsonExtractor:
+    """Parcourt un fichier JSON et crée des unités de texte traduisibles."""
+
     def extract(self, file_path: str) -> list[TextUnit]:
+        """Lit un fichier JSON et retourne la liste des unités de texte extraites."""
         with open(file_path, "r", encoding="utf-8-sig") as file:
             data = json.load(file)
 
@@ -27,6 +32,7 @@ class JsonExtractor:
         source_file: str,
         units: list[TextUnit],
     ) -> None:
+        """Traite récursivement une valeur JSON selon son type."""
         if isinstance(value, dict):
             self._process_dict(value, path, source_file, units)
 
@@ -43,6 +49,7 @@ class JsonExtractor:
         source_file: str,
         units: list[TextUnit],
     ) -> None:
+        """Parcourt un dictionnaire JSON et transmet ses valeurs."""
         for key, item in value.items():
             self._process_value(
                 item,
@@ -58,6 +65,7 @@ class JsonExtractor:
         source_file: str,
         units: list[TextUnit],
     ) -> None:
+        """Parcourt une liste JSON et transmet chaque élément."""
         for index, item in enumerate(value):
             self._process_value(
                 item,
@@ -73,6 +81,7 @@ class JsonExtractor:
         source_file: str,
         units: list[TextUnit],
     ) -> None:
+        """Crée une unité de texte à partir d'une chaîne non vide."""
         if not value.strip():
             return
 
