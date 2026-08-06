@@ -1,6 +1,7 @@
 from config.config import Config
 from database.database import Database
 from scanner.scanner import Scanner
+from ui.console import ConsoleUI
 from translator.google_translator import GoogleTranslatorService
 from translation_manager import TranslationManager
 
@@ -11,6 +12,7 @@ def main() -> None:
         scanner=Scanner(),
         database=Database(Config.DATABASE_PATH),
         translator=GoogleTranslatorService(),
+        console=ConsoleUI()
     )
 
     units = manager.run(Config.OSTRANAUTS_DATA_PATH)

@@ -1,5 +1,8 @@
 from database.database import Database
 from scanner.scanner import Scanner
+from config.config import Config
+from ui.review_action import ReviewAction
+from ui.console import ConsoleUI
 from translator.translator import Translator
 from models.text_unit import TextUnit
 
@@ -11,10 +14,12 @@ class TranslationManager:
         scanner: Scanner,
         database: Database,
         translator: Translator,
+        console: ConsoleUI
     ) -> None:
         self.scanner = scanner
         self.database = database
         self.translator = translator
+        self.console = console
         self.cached_count = 0
         self.translated_count = 0
 
@@ -33,6 +38,12 @@ class TranslationManager:
                 self.cached_count += 1
             else:
                 self.translator.translate(unit)
+                choice = self.console.review(unit)
+                if choice == ReviewAction.EDIT:
+                    unit.translated_text = input(f"\n {Config.NEW_TRANSLATION} : ")
+                elif choice == ReviewAction.QUIT:
+                    break
+                
                 self.database.update(unit)
                 self.translated_count += 1
 
