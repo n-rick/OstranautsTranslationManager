@@ -1,12 +1,13 @@
-from scanner.json_extractor import JsonExtractor
+from scanner.scanner import Scanner
 
 
 def main() -> None:
-    extractor = JsonExtractor()
+    scanner = Scanner()
 
-    units = extractor.extract("./tests/data/sample.json")
+    units = scanner.scan("./tests/data")
 
-    print(f"{len(units)} TextUnit(s) found\n")
+    print(f"Files scanned : {scanner.scanned_files}")
+    print(f"Text units : {len(units)}")
 
     for unit in units:
         print(unit)
