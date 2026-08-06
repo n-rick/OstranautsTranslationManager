@@ -1,3 +1,5 @@
+from src.models.text_unit import TextUnit
+
 class Database:
 
     def load(self):

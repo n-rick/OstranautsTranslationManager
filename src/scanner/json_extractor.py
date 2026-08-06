@@ -78,7 +78,7 @@ class JsonExtractor:
 
         uid = hashlib.sha1(f"{source_file}:{path}".encode("utf-8")).hexdigest()
 
-        field = path.split(".")[-1]
+        field = path.split(".")[-1].split("[")[0]
 
         units.append(
             TextUnit(
