@@ -173,4 +173,25 @@ class OstranautsRules:
         relative_path: str,
     ) -> list[TextUnit]:
 
-        return []
+        units: list[TextUnit] = []
+
+        for index, text in enumerate(values):
+
+            if not isinstance(text, str):
+                continue
+
+            uid = hashlib.sha1(
+                f"{relative_path}:{path}[{index}]".encode("utf-8")
+            ).hexdigest()
+
+            units.append(
+                TextUnit(
+                    uid=uid,
+                    relative_path=relative_path,
+                    json_path=f"{path}[{index}]",
+                    field="aPhaseTitles",
+                    source_text=text,
+                )
+            )
+
+        return units
