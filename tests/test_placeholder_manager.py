@@ -1,6 +1,8 @@
 import unittest
 
+from src.models.text_unit import TextUnit
 from src.translator.placeholder_manager import PlaceholderManager
+from src.translator.google_translator import GoogleTranslatorService
 
 
 class TestPlaceholderManager(unittest.TestCase):
@@ -48,6 +50,32 @@ class TestPlaceholderManager(unittest.TestCase):
 
         self.assertEqual(text, protected)
         self.assertEqual(text, restored)
+
+    def test_protects_multiple_placeholders(self):
+        text = "[us] tells [them] about [target]."
+
+        protected = self.manager.protect(text)
+        restored = self.manager.restore(
+            protected
+        )
+
+        self.assertNotEqual(protected, text)
+        self.assertEqual(restored, text)
+
+    def test_translate_preserves_placeholders(self):
+        unit = TextUnit(
+            uid="1",
+            relative_path="test.json",
+            json_path="$.strDesc",
+            field="strDesc",
+            source_text="[us] repairs [target].",
+        )
+
+        translator = GoogleTranslatorService()
+        translator.translate(unit)
+
+        self.assertIn("[us]", unit.translated_text)
+        self.assertIn("[target]", unit.translated_text)
 
 if __name__ == '__main__':
     unittest.main()
