@@ -53,7 +53,7 @@ class TranslationManager:
                     action = self.console.review(relative_path, unit)
                     
                     if action == ReviewAction.EDIT:
-                        unit.translated_text = input(f"\n {Config.NEW_TRANSLATIONS} : ").strip()
+                        self.console.edit(unit)
                         
                     if action == ReviewAction.NEXT_FILE:
                         skip_file = True
