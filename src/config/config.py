@@ -31,3 +31,7 @@ class Config:
     SKIP = os.getenv("SKIP", "")
     NEXT_FILE = os.getenv("NEXT_FILE", "")
     QUIT = os.getenv("QUIT", "")
+    TRANSLATE_ALL = os.getenv("TRANSLATE_ALL", "")
+    TRANSLATE_SINGLE = os.getenv("TRANSLATE_SINGLE", "")
+    FILE_PATH_TO_TRANSLATE = os.getenv("FILE_PATH_TO_TRANSLATE", "")
+    FILE_NOT_EXISTS = os.getenv("FILE_NOT_EXISTS", "")
