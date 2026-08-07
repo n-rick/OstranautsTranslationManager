@@ -1,7 +1,7 @@
 import hashlib
 
 from models.text_unit import TextUnit
-from rules.keys_terms import KeyTerms
+from rules.json_keys import JsonKeys
 
 
 class OstranautsRules:
@@ -45,7 +45,7 @@ class OstranautsRules:
         
         units: list[TextUnit] = []
 
-        if key == KeyTerms.A_VALUES.value:
+        if key == JsonKeys.A_VALUES.value:
             units.extend(
                 self._extract_aValues(
                     value,
@@ -55,8 +55,8 @@ class OstranautsRules:
             )
 
         elif key in (
-            KeyTerms.A_OVERRIDE_VALUES.value,
-            KeyTerms.A_OVERRIDE_TRIGGER_IA_VALUES.value,
+            JsonKeys.A_OVERRIDE_VALUES.value,
+            JsonKeys.A_OVERRIDE_TRIGGER_IA_VALUES.value,
         ):
             units.extend(
                 self._extract_override_values(
@@ -66,7 +66,7 @@ class OstranautsRules:
                 )
             )
 
-        elif key == KeyTerms.A_PHASE_TITLES.value:
+        elif key == JsonKeys.A_PHASE_TITLES.value:
             units.extend(
                 self._extract_phase_titles(
                     value,
