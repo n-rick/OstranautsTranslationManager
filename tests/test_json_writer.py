@@ -3,6 +3,7 @@ import shutil
 import unittest
 from pathlib import Path
 
+from src.models.unit_type import UnitType
 from src.models.text_unit import TextUnit
 from src.models.translation_project import TranslationProject
 from src.writer.json_writer import JsonWriter
@@ -237,3 +238,73 @@ class TestJsonWriter(unittest.TestCase):
         
         
         self.assertIn("[us]", result["children"][0]["strDesc"])
+
+
+    def test_write_a_values(self):
+        data = {
+            "aValues": [
+                "REPAIR",
+                "Repair",
+                "USE",
+                "Use",
+            ]
+        }
+
+        with open(
+            self.input_dir / "sample.json",
+            "w",
+            encoding="utf-8-sig",
+        ) as file:
+            json.dump(data, file)
+
+        project = TranslationProject()
+        project.root_directory = str(self.input_dir)
+
+        project.files["sample.json"] = [
+            TextUnit(
+                uid="1",
+                relative_path="sample.json",
+                json_path="$.aValues[1]",
+                field="value",
+                source_text="Repair",
+                translated_text="Réparer",
+                type=UnitType.A_VALUES,
+            ),
+            TextUnit(
+                uid="2",
+                relative_path="sample.json",
+                json_path="$.aValues[3]",
+                field="value",
+                source_text="Use",
+                translated_text="Utiliser",
+                type=UnitType.A_VALUES,
+            ),
+        ]
+
+        self.writer.write(
+            project,
+            str(self.output_dir),
+        )
+
+        with open(
+            self.output_dir / "sample.json",
+            encoding="utf-8-sig",
+        ) as file:
+            result = json.load(file)
+
+        self.assertEqual(
+            result["aValues"][0],
+            "REPAIR",
+        )
+        self.assertEqual(
+            result["aValues"][1],
+            "Réparer",
+        )
+        self.assertEqual(
+            result["aValues"][2],
+            "USE",
+        )
+        self.assertEqual(
+            result["aValues"][3],
+            "Utiliser",
+        )
