@@ -4,26 +4,15 @@ import json
 import hashlib
 from pathlib import Path
 from models.text_unit import TextUnit
+from rules.ostranauts_rules import OstranautsRules
 
 
 class JsonExtractor:
     """Parcourt un fichier JSON et crée des unités de texte traduisibles."""
-
-    TRANSLATABLE_FIELDS = {
-        "strTitle",
-        "strDesc",
-        "strTooltip",
-        "strMainText",
-        "strMainFriendly",
-        "strNameShort",
-        "strFriendlyName",
-        "strFriendlyDescription",
-        "strNameFriendly",
-        "strArticleTitle",
-        "strArticleBody",
-        "strNodeLabel",
-    }   
     
+    def __init__(self):
+        self.rules = OstranautsRules()
+
     def extract(self,
                 file_path: str,
                 relative_path: str,
@@ -81,6 +70,29 @@ class JsonExtractor:
     ) -> None:
         """Parcourt un dictionnaire JSON et transmet ses valeurs."""
         for key, item in value.items():
+            
+            special_units = self.rules.extract_special_units(
+                key,
+                item,
+                f"{path}.{key}",
+                relative_path,
+            )
+
+            if special_units:
+                units.extend(special_units)
+                continue
+            
+            if self.rules.is_translatable(key, item):
+
+                self._process_string(
+                    item,
+                    f"{path}.{key}",
+                    relative_path,
+                    units,
+                )
+
+                continue
+            
             self._process_value(
                 item,
                 f"{path}.{key}",
@@ -112,15 +124,13 @@ class JsonExtractor:
         units: list[TextUnit],
     ) -> None:
         """Crée une unité de texte à partir d'une chaîne non vide."""
+        
         if not value.strip():
             return
 
         uid = hashlib.sha1(f"{relative_path}:{path}".encode("utf-8")).hexdigest()
 
         field = path.split(".")[-1].split("[")[0]
-        
-        if field not in self.TRANSLATABLE_FIELDS:
-            return
 
         units.append(
             TextUnit(
