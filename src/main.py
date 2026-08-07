@@ -18,12 +18,12 @@ def main() -> None:
         console=ConsoleUI()
     )
 
-    units = manager.run(Config.OSTRANAUTS_DATA_PATH)
+    project = manager.run(Config.OSTRANAUTS_DATA_PATH)
 
-    print(f"Files scanned     : {manager.scanner.scanned_files}")
-    print(f"Text units        : {len(units)}")
-    print(f"From memory       : {manager.cached_count}")
-    print(f"New translations  : {manager.translated_count}")
+    print(f"{Config.FILE_SCANNED} : {project.scanned_files}")
+    print(f"{Config.FROM_MEMORY} : {project.cached_count}")
+    print(f"{Config.NEW_TRANSLATIONS} : {project.translated_count}")
+    print(f"{Config.TEXT_UNITS} : {sum(len(v) for v in project.files.values())}")
 
 
 if __name__ == "__main__":

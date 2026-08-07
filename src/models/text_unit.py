@@ -10,10 +10,10 @@ class TextUnit:
     """Représente un texte extraits d'un fichier JSON à traduire."""
 
     uid: str
-    source_file: str
+    relative_path: str
     json_path: str
     field: str
     source_text: str
     translated_text: str = ""
-    status: TranslationStatus = TranslationStatus.NEW
     comment: str = ""
+    status: TranslationStatus = TranslationStatus.NEW

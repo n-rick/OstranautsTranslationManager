@@ -10,4 +10,5 @@ class ReviewAction(Enum):
     VALIDATE = "V"
     EDIT = "E"
     SKIP = "S"
+    NEXT_FILE = "N"
     QUIT = "Q"

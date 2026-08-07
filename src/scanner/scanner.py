@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from models.text_unit import TextUnit
+from models.translation_project import TranslationProject
 from scanner.json_extractor import JsonExtractor
 
 
@@ -12,18 +13,22 @@ class Scanner:
     def __init__(self) -> None:
         """Initialise l'extracteur et le compteur de fichiers scannés."""
         self.extractor = JsonExtractor()
-        self.scanned_files = 0
 
-    def scan(self, directory: str) -> list[TextUnit]:
+    def scan(self, directory: str) -> TranslationProject:
         """Retourne toutes les unités de texte extraites des fichiers JSON du répertoire."""
-        units: list[TextUnit] = []
+        project = TranslationProject()
 
         for file in Path(directory).rglob("*.json"):
-            self.scanned_files += 1
+            project.scanned_files += 1
             try:
-                units.extend(self.extractor.extract(str(file)))
+                relative = str(file.relative_to(directory))
+                project.files[relative] = self.extractor.extract(
+                    str(file),
+                    relative,
+                    )
             except Exception as error:
                 print(f"[ERROR] {file}")
                 print(error)
 
-        return units
+        project.root_directory = directory
+        return project
