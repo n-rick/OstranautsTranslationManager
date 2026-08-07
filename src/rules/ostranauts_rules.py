@@ -21,6 +21,11 @@ class OstranautsRules:
         "strArticleBody",
         "strNodeLabel",
     }
+    
+    TRANSLATABLE_OVERRIDE_KEYS = {
+        "strTitle",
+        "strDesc",
+    }
 
     def is_translatable(
         self,
@@ -125,7 +130,41 @@ class OstranautsRules:
         relative_path: str,
     ) -> list[TextUnit]:
 
-        return []
+        TRANSLATABLE_OVERRIDE_KEYS = {
+            "strTitle",
+            "strDesc",
+        }
+
+        units: list[TextUnit] = []
+
+        for index, item in enumerate(values):
+
+            if not isinstance(item, str):
+                continue
+
+            if "|" not in item:
+                continue
+
+            key, text = item.split("|", 1)
+
+            if key not in self.TRANSLATABLE_OVERRIDE_KEYS:
+                continue
+
+            uid = hashlib.sha1(
+                f"{relative_path}:{path}[{index}]".encode("utf-8")
+            ).hexdigest()
+
+            units.append(
+                TextUnit(
+                    uid=uid,
+                    relative_path=relative_path,
+                    json_path=f"{path}[{index}]",
+                    field=key,
+                    source_text=text,
+                )
+            )
+
+        return units
     
     def _extract_phase_titles(
         self,

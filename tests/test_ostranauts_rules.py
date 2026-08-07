@@ -23,3 +23,25 @@ class TestOstranautsRules(unittest.TestCase):
             [unit.source_text for unit in units],
             ["Engine", "Reactor"],
         )
+
+    def test_extract_override_values_returns_expected_units(self):
+        """Vérification de l'extraction des valeurs d'override."""
+        rules = OstranautsRules()
+
+        values = [
+            "strTitle|Boop",
+            "strDesc|[us] boops [them].",
+            "strAnim|Use",
+        ]
+
+        units = rules._extract_override_values(values, "$.aOverrideValues", "sample.json")
+
+        self.assertEqual(len(units), 2)
+        self.assertEqual(
+            [unit.field for unit in units],
+            ["strTitle", "strDesc"],
+        )
+        self.assertEqual(
+            [unit.source_text for unit in units],
+            ["Boop", "[us] boops [them]."],
+        )
