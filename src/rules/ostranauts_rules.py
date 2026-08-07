@@ -85,7 +85,37 @@ class OstranautsRules:
         relative_path: str,
     ) -> list[TextUnit]:
 
-        return []
+        units: list[TextUnit] = []
+
+        for index in range(0, len(values) - 1, 2):
+
+            key = values[index]
+            value = values[index + 1]
+
+            if not isinstance(key, str):
+                continue
+
+            if not isinstance(value, str):
+                continue
+
+            if not key.isupper():
+                continue
+
+            uid = hashlib.sha1(
+                f"{relative_path}:{path}[{index + 1}]".encode("utf-8")
+            ).hexdigest()
+
+            units.append(
+                TextUnit(
+                    uid=uid,
+                    relative_path=relative_path,
+                    json_path=f"{path}[{index + 1}]",
+                    field="aValues",
+                    source_text=value,
+                )
+            )
+
+        return units
     
     
     def _extract_override_values(
