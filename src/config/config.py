@@ -33,5 +33,6 @@ class Config:
     QUIT = os.getenv("QUIT", "")
     TRANSLATE_ALL = os.getenv("TRANSLATE_ALL", "")
     TRANSLATE_SINGLE = os.getenv("TRANSLATE_SINGLE", "")
+    CHOICE = os.getenv("CHOICE", "")
     FILE_PATH_TO_TRANSLATE = os.getenv("FILE_PATH_TO_TRANSLATE", "")
     FILE_NOT_EXISTS = os.getenv("FILE_NOT_EXISTS", "")
