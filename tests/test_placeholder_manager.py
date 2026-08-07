@@ -77,5 +77,30 @@ class TestPlaceholderManager(unittest.TestCase):
         self.assertIn("[us]", unit.translated_text)
         self.assertIn("[target]", unit.translated_text)
 
+
+    def test_protects_tags(self):
+        text = (
+            "Welcome <color=#FF0000>player</color> "
+            "<b>to Ostranauts</b>."
+        )
+
+        protected = self.manager.protect(text)
+        restored = self.manager.restore(protected)
+
+        self.assertNotEqual(protected, text)
+        self.assertEqual(restored, text)
+
+    def test_protects_tags_and_placeholders(self):
+        text = (
+            "[us] tells [them] "
+            "<color=#FF0000>something</color>."
+        )
+
+        protected = self.manager.protect(text)
+        restored = self.manager.restore(protected)
+
+        self.assertNotEqual(protected, text)
+        self.assertEqual(restored, text)
+
 if __name__ == '__main__':
     unittest.main()

@@ -8,6 +8,8 @@ class PlaceholderManager:
 
     PATTERN = re.compile(r"\[[^\]]+\]")
 
+    TAG_PATTERN = re.compile(r"</?[^>]+>")
+
     def __init__(self) -> None:
         """Initialise la structure de stockage des placeholders."""
         self.placeholders: dict[str, str] = {}
@@ -25,7 +27,10 @@ class PlaceholderManager:
 
             return token
 
-        return self.PATTERN.sub(replace, text)
+        text = self.PATTERN.sub(replace, text)
+        text = self.TAG_PATTERN.sub(replace, text)
+
+        return text
 
     def restore(self, text: str) -> str:
         """Restaure les placeholders originaux dans un texte traduit."""
