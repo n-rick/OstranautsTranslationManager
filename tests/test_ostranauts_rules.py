@@ -45,3 +45,29 @@ class TestOstranautsRules(unittest.TestCase):
             [unit.source_text for unit in units],
             ["Boop", "[us] boops [them]."],
         )
+
+    def test_extract_phase_titles_returns_expected_units(self):
+        """Vérification de l'extraction des titres de phase."""
+        rules = OstranautsRules()
+
+        values = [
+            "STARTING",
+            "[contact] wants a photo of [target].",
+            "Return to [contact] with the photo.",
+        ]
+
+        units = rules._extract_phase_titles(values, "$.aPhaseTitles", "sample.json")
+
+        self.assertEqual(len(units), 3)
+        self.assertEqual(
+            units[0].source_text,
+            "STARTING"
+        )
+        self.assertEqual(
+            units[1].source_text,
+            "[contact] wants a photo of [target]."
+        )
+        self.assertEqual(
+            units[2].source_text,
+            "Return to [contact] with the photo."
+        )

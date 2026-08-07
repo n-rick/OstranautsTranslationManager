@@ -1,7 +1,7 @@
 """Actions possibles lors de la revue d'une traduction."""
 
 from enum import Enum
-from config.config import Config
+from src.config.config import Config
 
 
 class ReviewAction(Enum):

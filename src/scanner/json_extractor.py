@@ -3,8 +3,8 @@
 import json
 import hashlib
 from pathlib import Path
-from models.text_unit import TextUnit
-from rules.ostranauts_rules import OstranautsRules
+from src.models.text_unit import TextUnit
+from src.rules.ostranauts_rules import OstranautsRules
 
 
 class JsonExtractor:

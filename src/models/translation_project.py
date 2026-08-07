@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from models.text_unit import TextUnit
+from src.models.text_unit import TextUnit
 
 
 @dataclass

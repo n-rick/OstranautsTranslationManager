@@ -1,8 +1,8 @@
 from deep_translator import GoogleTranslator
-from config.config import Config
-from models.text_unit import TextUnit
-from translator.placeholder_manager import PlaceholderManager
-from translator.translator import Translator
+from src.config.config import Config
+from src.models.text_unit import TextUnit
+from src.translator.placeholder_manager import PlaceholderManager
+from src.translator.translator import Translator
 
 
 class GoogleTranslatorService(Translator):

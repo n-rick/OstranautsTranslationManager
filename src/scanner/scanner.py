@@ -2,9 +2,9 @@
 
 from pathlib import Path
 
-from models.text_unit import TextUnit
-from models.translation_project import TranslationProject
-from scanner.json_extractor import JsonExtractor
+from src.models.text_unit import TextUnit
+from src.models.translation_project import TranslationProject
+from src.scanner.json_extractor import JsonExtractor
 
 
 class Scanner:

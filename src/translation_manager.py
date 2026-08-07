@@ -1,15 +1,15 @@
 """Gestion du flux principal de traduction des unités de texte."""
 
 from database.database import Database
-from models.translation_project import TranslationProject
-from models.translation_status import TranslationStatus
-from scanner.scanner import Scanner
-from config.config import Config
-from ui.review_action import ReviewAction
-from ui.console import ConsoleUI
-from translator.translator import Translator
-from models.text_unit import TextUnit
-from writer.json_writer import JsonWriter
+from src.models.translation_project import TranslationProject
+from src.models.translation_status import TranslationStatus
+from src.scanner.scanner import Scanner
+from src.config.config import Config
+from src.ui.review_action import ReviewAction
+from src.ui.console import ConsoleUI
+from src.translator.translator import Translator
+from src.models.text_unit import TextUnit
+from src.writer.json_writer import JsonWriter
 
 
 class TranslationManager:

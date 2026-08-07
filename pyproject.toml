@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ostranauts-translation-manager"
+version = "0.1.0"
+description = "Gestionnaire de traduction pour Ostranauts"
+readme = "README.md"
+requires-python = ">=3.13"
+authors = [
+    { name = "Votre Nom", email = "votre.email@example.com" }
+]
+dependencies = [
+    # Ajoutez vos dépendances de production ici (ex: "requests", "pandas")
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.1",  # Pour mesurer la couverture de code
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
