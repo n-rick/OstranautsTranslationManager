@@ -6,6 +6,7 @@ from scanner.scanner import Scanner
 from ui.console import ConsoleUI
 from translator.google_translator import GoogleTranslatorService
 from translation_manager import TranslationManager
+from writer.json_writer import JsonWriter
 
 
 def main() -> None:
@@ -15,7 +16,8 @@ def main() -> None:
         scanner=Scanner(),
         database=Database(Config.DATABASE_PATH),
         translator=GoogleTranslatorService(),
-        console=ConsoleUI()
+        console=ConsoleUI(),
+        writer=JsonWriter()
     )
 
     project = manager.run(Config.OSTRANAUTS_DATA_PATH)

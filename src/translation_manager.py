@@ -8,6 +8,7 @@ from ui.review_action import ReviewAction
 from ui.console import ConsoleUI
 from translator.translator import Translator
 from models.text_unit import TextUnit
+from writer.json_writer import JsonWriter
 
 
 class TranslationManager:
@@ -18,13 +19,15 @@ class TranslationManager:
         scanner: Scanner,
         database: Database,
         translator: Translator,
-        console: ConsoleUI
+        console: ConsoleUI,
+        writer: JsonWriter,
     ) -> None:
         """Initialise les dépendances du gestionnaire et ses compteurs."""
         self.scanner = scanner
         self.database = database
         self.translator = translator
         self.console = console
+        self.writer = writer
         self.cached_count = 0
         self.translated_count = 0
 
@@ -75,6 +78,11 @@ class TranslationManager:
                 continue
                 
         self.database.save()
+        
+        self.writer.write(
+            project,
+            Config.OUTPUT_PATH,
+        )
 
         project.cached_count = self.cached_count
         project.translated_count = self.translated_count
