@@ -35,3 +35,28 @@ class Scanner:
 
         project.root_directory = directory
         return project
+    
+    def scan_file(self, file_path: str) -> TranslationProject:
+        """Retourne toutes les unités de texte extraites d'un fichier JSON spécifique."""
+        project = TranslationProject()
+        file = Path(file_path)
+        
+        try:
+            project.scanned_files = 1
+            project.root_directory = str(file.parent)
+            
+            relative_path= file.name
+            project.files[relative_path] = self.extractor.extract(
+                str(file),
+                relative_path,
+            )
+            
+            return project
+
+        except Exception as error:
+            project.failed_files.append(str(file))
+            print(f"[ERROR] {file}")
+            print(error)
+
+        project.root_directory = str(Path(file_path).parent)
+        return project
