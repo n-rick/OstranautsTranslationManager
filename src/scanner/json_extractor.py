@@ -9,7 +9,10 @@ from models.text_unit import TextUnit
 class JsonExtractor:
     """Parcourt un fichier JSON et crée des unités de texte traduisibles."""
 
-    def extract(self, file_path: str) -> list[TextUnit]:
+    def extract(self,
+                file_path: str,
+                relative_path: str,
+                ) -> list[TextUnit]:
         """Lit un fichier JSON et retourne la liste des unités de texte extraites."""
         with open(file_path, "r", encoding="utf-8-sig") as file:
             data = json.load(file)
@@ -19,7 +22,7 @@ class JsonExtractor:
         self._process_value(
             value=data,
             path="$",
-            source_file=Path(file_path).name,
+            relative_path=relative_path,
             units=units,
         )
 
@@ -29,24 +32,24 @@ class JsonExtractor:
         self,
         value,
         path: str,
-        source_file: str,
+        relative_path: str,
         units: list[TextUnit],
     ) -> None:
         """Traite récursivement une valeur JSON selon son type."""
         if isinstance(value, dict):
-            self._process_dict(value, path, source_file, units)
+            self._process_dict(value, path, relative_path, units)
 
         elif isinstance(value, list):
-            self._process_list(value, path, source_file, units)
+            self._process_list(value, path, relative_path, units)
 
         elif isinstance(value, str):
-            self._process_string(value, path, source_file, units)
+            self._process_string(value, path, relative_path, units)
 
     def _process_dict(
         self,
         value: dict,
         path: str,
-        source_file: str,
+        relative_path: str,
         units: list[TextUnit],
     ) -> None:
         """Parcourt un dictionnaire JSON et transmet ses valeurs."""
@@ -54,7 +57,7 @@ class JsonExtractor:
             self._process_value(
                 item,
                 f"{path}.{key}",
-                source_file,
+                relative_path,
                 units,
             )
 
@@ -62,7 +65,7 @@ class JsonExtractor:
         self,
         value: list,
         path: str,
-        source_file: str,
+        relative_path: str,
         units: list[TextUnit],
     ) -> None:
         """Parcourt une liste JSON et transmet chaque élément."""
@@ -70,7 +73,7 @@ class JsonExtractor:
             self._process_value(
                 item,
                 f"{path}[{index}]",
-                source_file,
+                relative_path,
                 units,
             )
 
@@ -78,21 +81,21 @@ class JsonExtractor:
         self,
         value: str,
         path: str,
-        source_file: str,
+        relative_path: str,
         units: list[TextUnit],
     ) -> None:
         """Crée une unité de texte à partir d'une chaîne non vide."""
         if not value.strip():
             return
 
-        uid = hashlib.sha1(f"{source_file}:{path}".encode("utf-8")).hexdigest()
+        uid = hashlib.sha1(f"{relative_path}:{path}".encode("utf-8")).hexdigest()
 
         field = path.split(".")[-1].split("[")[0]
 
         units.append(
             TextUnit(
                 uid=uid,
-                source_file=source_file,
+                relative_path=relative_path,
                 json_path=path,
                 field=field,
                 source_text=value,

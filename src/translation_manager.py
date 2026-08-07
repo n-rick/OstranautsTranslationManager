@@ -1,6 +1,7 @@
 """Gestion du flux principal de traduction des unités de texte."""
 
 from database.database import Database
+from models.translation_project import TranslationProject
 from scanner.scanner import Scanner
 from config.config import Config
 from ui.review_action import ReviewAction
@@ -27,32 +28,56 @@ class TranslationManager:
         self.cached_count = 0
         self.translated_count = 0
 
-    def run(self, directory: str) -> list[TextUnit]:
+    def run(self, directory: str) -> TranslationProject:
         """Exécute le processus complet de traduction pour un répertoire donné."""
 
-        units = self.scanner.scan(directory)
+        project = self.scanner.scan(directory)
 
         self.database.load()
 
-        for unit in units:
+        for relative_path, units in project.files.items():
+            
+            skip_file = False
+            
+            for unit in units:
 
-            translation = self.database.get_translation(unit.uid)
+                translation = self.database.get_translation(unit.uid)
 
-            if translation is not None:
-                unit.translated_text = translation
-                self.cached_count += 1
-            else:
-                self.translator.translate(unit)
-                choice = self.console.review(unit)
-                if choice == ReviewAction.EDIT:
-                    unit.translated_text = input(f"\n {Config.NEW_TRANSLATION} : ")
-                elif choice == ReviewAction.QUIT:
-                    break
+                if translation is not None:
+                    unit.translated_text = translation
+                    self.cached_count += 1
+                    
+                else:
+                    self.translator.translate(unit)
+                    
+                    action = self.console.review(relative_path, unit)
+                    
+                    if action == ReviewAction.EDIT:
+                        unit.translated_text = input(f"\n {Config.NEW_TRANSLATIONS} : ").strip()
+                        
+                    if action == ReviewAction.NEXT_FILE:
+                        skip_file = True
+                        break
+                    
+                    if action == ReviewAction.QUIT:
+                        self.database.save()
+                        project.cached_count = self.cached_count
+                        project.translated_count = self.translated_count
+                        return project
+                    
+                    if action == "" or isinstance(action, KeyboardInterrupt):
+                        action = ReviewAction.QUIT
 
-                self.database.update(unit)
-                self.translated_count += 1
-
+                    self.database.update(unit)
+                    self.translated_count += 1
+            
+            if skip_file:
+                continue
+                
         self.database.save()
 
-        return units
+        project.cached_count = self.cached_count
+        project.translated_count = self.translated_count
+
+        return project
     
