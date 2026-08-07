@@ -31,3 +31,11 @@ class ConsoleUI:
         choice = input("\nVotre choix : ").strip().upper()
         
         return ReviewAction(choice) if choice else ReviewAction.VALIDATE
+    
+        
+    def edit(self, unit: TextUnit) -> None:
+        """Permet à l'utilisateur de modifier le texte traduit."""
+        new_translation = input(f"\n{Config.NEW_TRANSLATIONS} : ").strip()
+
+        if new_translation:
+            unit.translated_text = new_translation
