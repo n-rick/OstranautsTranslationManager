@@ -7,9 +7,14 @@ from ui.console import ConsoleUI
 from translator.google_translator import GoogleTranslatorService
 from translation_manager import TranslationManager
 from writer.json_writer import JsonWriter
+from ui.start_menu import StartMenu
 
 def main() -> None:
     """Initialise les composants et lance le processus de traduction."""
+
+    start_menu = StartMenu()
+    
+    scan_directory, selected_file = start_menu.ask()
 
     manager = TranslationManager(
         scanner=Scanner(),
@@ -20,7 +25,10 @@ def main() -> None:
     )
 
     try:
-        project = manager.run(Config.OSTRANAUTS_DATA_PATH)
+        if scan_directory:
+            project = manager.run(Config.OSTRANAUTS_DATA_PATH)
+        else:
+            project = manager.run_file(selected_file)
 
     except KeyboardInterrupt:
         print("\n\nArrêt demandé.")
