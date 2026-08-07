@@ -2,5 +2,17 @@
     "python.analysis.extraPaths": [
         "./src"
     ],
-    "cSpell.language": "en, fr"
+    "cSpell.language": "en, fr",
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./tests",
+        "-p",
+        "test_*.py"
+    ]
 }

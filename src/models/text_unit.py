@@ -2,7 +2,8 @@
 
 from dataclasses import dataclass
 
-from models.translation_status import TranslationStatus
+from src.models.translation_status import TranslationStatus
+from src.models.unit_type import UnitType
 
 
 @dataclass
@@ -17,3 +18,4 @@ class TextUnit:
     translated_text: str = ""
     comment: str = ""
     status: TranslationStatus = TranslationStatus.NEW
+    type: UnitType = UnitType.NORMAL

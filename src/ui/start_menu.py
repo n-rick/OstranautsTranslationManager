@@ -1,5 +1,5 @@
 from pathlib import Path
-from config.config import Config
+from src.config.config import Config
 
 
 class StartMenu:

@@ -1,6 +1,6 @@
 """Interface de base pour les services de traduction."""
 
-from models.text_unit import TextUnit
+from src.models.text_unit import TextUnit
 
 
 class Translator:

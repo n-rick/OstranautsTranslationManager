@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from models.text_unit import TextUnit
+from src.models.text_unit import TextUnit
 
 
 class Database:

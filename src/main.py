@@ -1,13 +1,13 @@
 """Point d'entrée principal de l'application de traduction."""
 
-from config.config import Config
+from src.config.config import Config
 from database.database import Database
-from scanner.scanner import Scanner
-from ui.console import ConsoleUI
-from translator.google_translator import GoogleTranslatorService
-from translation_manager import TranslationManager
-from writer.json_writer import JsonWriter
-from ui.start_menu import StartMenu
+from src.scanner.scanner import Scanner
+from src.ui.console import ConsoleUI
+from src.translator.google_translator import GoogleTranslatorService
+from src.translation_manager import TranslationManager
+from src.writer.json_writer import JsonWriter
+from src.ui.start_menu import StartMenu
 
 def main() -> None:
     """Initialise les composants et lance le processus de traduction."""

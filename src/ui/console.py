@@ -1,8 +1,8 @@
 """Interface utilisateur en console pour la revue des traductions."""
 
-from models.text_unit import TextUnit
-from config.config import Config
-from ui.review_action import ReviewAction
+from src.models.text_unit import TextUnit
+from src.config.config import Config
+from src.ui.review_action import ReviewAction
 
 
 class ConsoleUI:

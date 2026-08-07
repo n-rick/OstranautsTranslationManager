@@ -1,7 +1,8 @@
 import hashlib
 
-from models.text_unit import TextUnit
-from rules.json_keys import JsonKeys
+from src.models.text_unit import TextUnit
+from src.models.unit_type import UnitType
+from src.rules.json_keys import JsonKeys
 
 
 class OstranautsRules:
@@ -117,6 +118,7 @@ class OstranautsRules:
                     json_path=f"{path}[{index + 1}]",
                     field="aValues",
                     source_text=value,
+                    type=UnitType.A_VALUES,
                 )
             )
 
@@ -129,11 +131,6 @@ class OstranautsRules:
         path: str,
         relative_path: str,
     ) -> list[TextUnit]:
-
-        TRANSLATABLE_OVERRIDE_KEYS = {
-            "strTitle",
-            "strDesc",
-        }
 
         units: list[TextUnit] = []
 
@@ -161,6 +158,7 @@ class OstranautsRules:
                     json_path=f"{path}[{index}]",
                     field=key,
                     source_text=text,
+                    type=UnitType.A_OVERRIDE_VALUES
                 )
             )
 
@@ -191,6 +189,7 @@ class OstranautsRules:
                     json_path=f"{path}[{index}]",
                     field="aPhaseTitles",
                     source_text=text,
+                    type=UnitType.A_PHASE_TITLES
                 )
             )
 

@@ -1,7 +1,7 @@
 """Énumération des statuts possibles d'une unité de texte."""
 
 from enum import Enum
-from config.config import Config
+from src.config.config import Config
 
 
 class TranslationStatus(Enum):

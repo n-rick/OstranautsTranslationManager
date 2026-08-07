@@ -3,8 +3,9 @@ import re
 
 from pathlib import Path
 
-from models.text_unit import TextUnit
-from models.translation_project import TranslationProject
+from src.models.text_unit import TextUnit
+from src.models.translation_project import TranslationProject
+from src.models.unit_type import UnitType
 
 
 class JsonWriter:
@@ -40,8 +41,7 @@ class JsonWriter:
         for unit in units:
             self._set_value(
                 data,
-                unit.json_path,
-                unit.translated_text,
+                unit
             )
 
         output_file.parent.mkdir(
@@ -60,35 +60,67 @@ class JsonWriter:
     def _set_value(
         self,
         data,
-        json_path: str,
-        value: str,
+        unit: TextUnit,
     ) -> None:
-        # Supprime le '$' initial et les points/crochets superflus pour le découpage
         clean_path = (
-            json_path
+            unit.json_path
             .removeprefix("$")
             .replace("[", ".")
             .replace("]", "")
         )
-        
-        tokens = [t for t in clean_path.split(".") if t]
-        
+
+        tokens = [token for token in clean_path.split(".") if token]
+
         if not tokens:
             return
-            
+
         current = data
 
-        # On navigue jusqu'à l'avant-dernier élément
+        # Navigation jusqu'au parent
         for token in tokens[:-1]:
             if token.isdigit():
-                current = current[int(token)]  
+                current = current[int(token)]
             else:
                 current = current[token]
-                
+
         last_token = tokens[-1]
-        
-        # On applique la traduction sur le dernier élément
+
+        # Valeur actuelle
         if last_token.isdigit():
-            current[int(last_token)] = value
+            old_value = current[int(last_token)]
         else:
-            current[last_token] = value
+            old_value = current[last_token]
+
+        # Nouvelle valeur
+        new_value = self._build_value(old_value, unit)
+
+        # Écriture
+        if last_token.isdigit():
+            current[int(last_token)] = new_value
+        else:
+            current[last_token] = new_value
+
+    def _build_value(
+        self,
+        old_value,
+        unit: TextUnit,
+    ) -> str:
+
+        if unit.type == UnitType.NORMAL:
+            return unit.translated_text
+
+        if unit.type == UnitType.A_OVERRIDE_VALUES:
+            key = old_value.split("|", 1)[0]
+            return f"{key}|{unit.translated_text}"
+
+        if unit.type == UnitType.A_OVERRIDE_TRIGGER_IA_VALUES:
+            key = old_value.split("|", 1)[0]
+            return f"{key}|{unit.translated_text}"
+
+        if unit.type == UnitType.A_PHASE_TITLES:
+            return unit.translated_text
+
+        if unit.type == UnitType.A_VALUES:
+            return unit.translated_text
+
+        return unit.translated_text
