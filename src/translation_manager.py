@@ -33,10 +33,19 @@ class TranslationManager:
         self.translated_count = 0
 
     def run(self, directory: str) -> TranslationProject:
-        """Exécute le processus complet de traduction pour un répertoire donné."""
-
         project = self.scanner.scan(directory)
+        return self._process_project(project)
 
+    
+    def run_file(self, file_path: str) -> TranslationProject:
+        project = self.scanner.scan_file(file_path)
+        return self._process_project(project)
+    
+    
+    def _process_project(
+        self,
+        project: TranslationProject,
+    ) -> TranslationProject:
         self.database.load()
 
         for relative_path, units in project.files.items():
