@@ -2,6 +2,7 @@
 
 from database.database import Database
 from models.translation_project import TranslationProject
+from models.translation_status import TranslationStatus
 from scanner.scanner import Scanner
 from config.config import Config
 from ui.review_action import ReviewAction
@@ -52,7 +53,13 @@ class TranslationManager:
                     
                 else:
                     self.translator.translate(unit)
+                    unit.status = TranslationStatus.AUTO_TRANSLATED
                     
+                    if unit.status == TranslationStatus.AUTO_TRANSLATED:
+                        self.database.update(unit)
+                        self.translated_count += 1
+                        continue
+                                        
                     action = self.console.review(relative_path, unit)
                     
                     if action == ReviewAction.EDIT:

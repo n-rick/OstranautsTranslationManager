@@ -8,7 +8,6 @@ from translator.google_translator import GoogleTranslatorService
 from translation_manager import TranslationManager
 from writer.json_writer import JsonWriter
 
-
 def main() -> None:
     """Initialise les composants et lance le processus de traduction."""
 
@@ -20,7 +19,11 @@ def main() -> None:
         writer=JsonWriter()
     )
 
-    project = manager.run(Config.OSTRANAUTS_DATA_PATH)
+    try:
+        project = manager.run(Config.OSTRANAUTS_DATA_PATH)
+
+    except KeyboardInterrupt:
+        print("\n\nArrêt demandé.")
 
     print(f"{Config.FILE_SCANNED} : {project.scanned_files}")
     print(f"{Config.FROM_MEMORY} : {project.cached_count}")

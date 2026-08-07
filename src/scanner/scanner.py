@@ -18,7 +18,9 @@ class Scanner:
         """Retourne toutes les unités de texte extraites des fichiers JSON du répertoire."""
         project = TranslationProject()
 
-        for file in Path(directory).rglob("*.json"):
+        files = sorted(Path(directory).rglob("*.json"))
+
+        for file in files:
             project.scanned_files += 1
             try:
                 relative = str(file.relative_to(directory))
@@ -27,6 +29,7 @@ class Scanner:
                     relative,
                     )
             except Exception as error:
+                project.failed_files.append(str(file))
                 print(f"[ERROR] {file}")
                 print(error)
 

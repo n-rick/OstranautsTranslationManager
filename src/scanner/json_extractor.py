@@ -9,13 +9,40 @@ from models.text_unit import TextUnit
 class JsonExtractor:
     """Parcourt un fichier JSON et crée des unités de texte traduisibles."""
 
+    TRANSLATABLE_FIELDS = {
+        "strTitle",
+        "strDesc",
+        "strTooltip",
+        "strMainText",
+        "strMainFriendly",
+        "strNameShort",
+        "strFriendlyName",
+        "strFriendlyDescription",
+        "strNameFriendly",
+        "strArticleTitle",
+        "strArticleBody",
+        "strNodeLabel",
+    }   
+    
     def extract(self,
                 file_path: str,
                 relative_path: str,
                 ) -> list[TextUnit]:
         """Lit un fichier JSON et retourne la liste des unités de texte extraites."""
         with open(file_path, "r", encoding="utf-8-sig") as file:
-            data = json.load(file)
+            content = file.read()
+
+            lines = []
+
+            for line in content.splitlines():
+                stripped = line.strip()
+
+                if stripped.startswith("//"):
+                    continue
+
+                lines.append(line)
+
+            data = json.loads("\n".join(lines))
 
         units: list[TextUnit] = []
 
@@ -91,6 +118,9 @@ class JsonExtractor:
         uid = hashlib.sha1(f"{relative_path}:{path}".encode("utf-8")).hexdigest()
 
         field = path.split(".")[-1].split("[")[0]
+        
+        if field not in self.TRANSLATABLE_FIELDS:
+            return
 
         units.append(
             TextUnit(

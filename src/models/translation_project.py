@@ -12,3 +12,4 @@ class TranslationProject:
     translated_count: int = 0
     cached_count: int = 0
     root_directory: str = ""
+    failed_files: list[str] = field(default_factory=list)
