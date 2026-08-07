@@ -71,6 +71,17 @@ class JsonExtractor:
         """Parcourt un dictionnaire JSON et transmet ses valeurs."""
         for key, item in value.items():
             
+            special_units = self.rules.extract_special_units(
+                key,
+                item,
+                f"{path}.{key}",
+                relative_path,
+            )
+
+            if special_units:
+                units.extend(special_units)
+                continue
+            
             if self.rules.is_translatable(key, item):
 
                 self._process_string(
