@@ -1,6 +1,6 @@
 """Gestion du flux principal de traduction des unités de texte."""
 
-from database.database import Database
+from src.database.database import Database
 from src.models.translation_project import TranslationProject
 from src.models.translation_status import TranslationStatus
 from src.scanner.scanner import Scanner
@@ -32,26 +32,47 @@ class TranslationManager:
         self.cached_count = 0
         self.translated_count = 0
 
-    def run(self, directory: str) -> TranslationProject:
+    def run(self,
+            directory: str,
+            automatic: bool,
+        ) -> TranslationProject:
+        """Traduit les fichiers JSON d'un répertoire."""
+
         project = self.scanner.scan(directory)
-        return self._process_project(project)
+
+        return self._process_project(
+            project,
+            automatic
+        )
 
     
-    def run_file(self, file_path: str) -> TranslationProject:
+    def run_file(self,
+                 file_path: str,
+                 automatic: bool,
+        ) -> TranslationProject:
+        """Traduit un fichier JSON unique."""
+
         project = self.scanner.scan_file(file_path)
-        return self._process_project(project)
+
+        return self._process_project(
+            project,
+            automatic,
+        )
     
     
     def _process_project(
         self,
         project: TranslationProject,
+        automatic: bool,
     ) -> TranslationProject:
+        """Traite les unités du projet selon le mode choisi."""
+
         self.database.load()
 
         for relative_path, units in project.files.items():
-            
+
             skip_file = False
-            
+
             for unit in units:
 
                 translation = self.database.get_translation(unit.uid)
@@ -59,42 +80,44 @@ class TranslationManager:
                 if translation is not None:
                     unit.translated_text = translation
                     self.cached_count += 1
-                    
-                else:
-                    self.translator.translate(unit)
-                    unit.status = TranslationStatus.AUTO_TRANSLATED
-                    
-                    if unit.status == TranslationStatus.AUTO_TRANSLATED:
-                        self.database.update(unit)
-                        self.translated_count += 1
-                        continue
-                                        
-                    action = self.console.review(relative_path, unit)
-                    
+                    continue
+
+                self.translator.translate(unit)
+
+                unit.status = TranslationStatus.AUTO_TRANSLATED
+
+                if not automatic:
+                    action = self.console.review(
+                        relative_path,
+                        unit,
+                    )
+
                     if action == ReviewAction.EDIT:
                         self.console.edit(unit)
-                        
-                    if action == ReviewAction.NEXT_FILE:
+
+                    elif action == ReviewAction.SKIP:
+                        continue
+
+                    elif action == ReviewAction.NEXT_FILE:
                         skip_file = True
                         break
-                    
-                    if action == ReviewAction.QUIT:
+
+                    elif action == ReviewAction.QUIT:
                         self.database.save()
+
                         project.cached_count = self.cached_count
                         project.translated_count = self.translated_count
-                        return project
-                    
-                    if action == "" or isinstance(action, KeyboardInterrupt):
-                        action = ReviewAction.QUIT
 
-                    self.database.update(unit)
-                    self.translated_count += 1
-            
+                        return project
+
+                self.database.update(unit)
+                self.translated_count += 1
+
             if skip_file:
                 continue
-                
+
         self.database.save()
-        
+
         self.writer.write(
             project,
             Config.OUTPUT_PATH,

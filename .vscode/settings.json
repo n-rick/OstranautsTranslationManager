@@ -14,5 +14,6 @@
         "./tests",
         "-p",
         "test_*.py"
-    ]
+    ],
+    "editor.guides.bracketPairs": true
 }
