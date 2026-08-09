@@ -1,7 +1,7 @@
 """Point d'entrée principal de l'application de traduction."""
 
 from src.config.config import Config
-from database.database import Database
+from src.database.database import Database
 from src.scanner.scanner import Scanner
 from src.ui.console import ConsoleUI
 from src.translator.google_translator import GoogleTranslatorService
@@ -14,7 +14,7 @@ def main() -> None:
 
     start_menu = StartMenu()
     
-    scan_directory, selected_file = start_menu.ask()
+    scan_directory, selected_file, automatic = start_menu.ask()
 
     manager = TranslationManager(
         scanner=Scanner(),
@@ -24,14 +24,25 @@ def main() -> None:
         writer=JsonWriter()
     )
 
+    project = None
+
     try:
         if scan_directory:
-            project = manager.run(Config.OSTRANAUTS_DATA_PATH)
+            project = manager.run(
+                Config.OSTRANAUTS_DATA_PATH,
+                automatic
+            )
         else:
-            project = manager.run_file(selected_file)
+            project = manager.run_file(
+                selected_file,
+                automatic
+            )
 
     except KeyboardInterrupt:
         print("\n\nArrêt demandé.")
+
+    if project is None:
+        return
 
     print(f"{Config.FILE_SCANNED} : {project.scanned_files}")
     print(f"{Config.FROM_MEMORY} : {project.cached_count}")
