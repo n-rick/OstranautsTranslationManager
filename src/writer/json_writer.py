@@ -1,20 +1,21 @@
-import json
-import re
+"""Écriture des fichiers JSON traduits."""
 
+import json
 from pathlib import Path
 
 from src.models.text_unit import TextUnit
 from src.models.translation_project import TranslationProject
-from src.models.unit_type import UnitType
 
 
 class JsonWriter:
+    """Écrit les fichiers JSON traduits dans le répertoire de sortie."""
 
     def write(
         self,
         project: TranslationProject,
         output_directory: str,
     ) -> None:
+        """Écrit tous les fichiers du projet en conservant leur chemin relatif."""
 
         for relative_path, units in project.files.items():
 
@@ -26,22 +27,38 @@ class JsonWriter:
                 output_file,
                 units,
             )
-    
-    
+
     def _write_file(
         self,
         input_file: Path,
         output_file: Path,
         units: list[TextUnit],
     ) -> None:
+        """Charge, modifie et écrit un fichier JSON."""
 
-        with open(input_file, "r", encoding="utf-8-sig") as file:
-            data = json.load(file)
+        with open(
+            input_file,
+            "r",
+            encoding="utf-8-sig",
+        ) as file:
+            content = file.read()
+
+        lines = []
+
+        for line in content.splitlines():
+            stripped = line.strip()
+
+            if stripped.startswith("//"):
+                continue
+
+            lines.append(line)
+
+        data = json.loads("\n".join(lines))
 
         for unit in units:
             self._set_value(
                 data,
-                unit
+                unit,
             )
 
         output_file.parent.mkdir(
@@ -49,7 +66,11 @@ class JsonWriter:
             exist_ok=True,
         )
 
-        with open(output_file, "w", encoding="utf-8-sig") as file:
+        with open(
+            output_file,
+            "w",
+            encoding="utf-8-sig",
+        ) as file:
             json.dump(
                 data,
                 file,
@@ -62,6 +83,8 @@ class JsonWriter:
         data,
         unit: TextUnit,
     ) -> None:
+        """Remplace la valeur correspondant au chemin JSON de l'unité."""
+
         clean_path = (
             unit.json_path
             .removeprefix("$")
@@ -69,7 +92,11 @@ class JsonWriter:
             .replace("]", "")
         )
 
-        tokens = [token for token in clean_path.split(".") if token]
+        tokens = [
+            token
+            for token in clean_path.split(".")
+            if token
+        ]
 
         if not tokens:
             return
@@ -91,10 +118,11 @@ class JsonWriter:
         else:
             old_value = current[last_token]
 
-        # Nouvelle valeur
-        new_value = self._build_value(old_value, unit)
+        new_value = self._build_value(
+            old_value,
+            unit,
+        )
 
-        # Écriture
         if last_token.isdigit():
             current[int(last_token)] = new_value
         else:
@@ -105,22 +133,15 @@ class JsonWriter:
         old_value,
         unit: TextUnit,
     ) -> str:
+        """Construit la valeur finale à écrire."""
 
-        if unit.type == UnitType.NORMAL:
-            return unit.translated_text
-
-        if unit.type == UnitType.A_OVERRIDE_VALUES:
+        if (
+            unit.field in {"strTitle", "strDesc"}
+            and isinstance(old_value, str)
+            and "|" in old_value
+        ):
             key = old_value.split("|", 1)[0]
+
             return f"{key}|{unit.translated_text}"
-
-        if unit.type == UnitType.A_OVERRIDE_TRIGGER_IA_VALUES:
-            key = old_value.split("|", 1)[0]
-            return f"{key}|{unit.translated_text}"
-
-        if unit.type == UnitType.A_PHASE_TITLES:
-            return unit.translated_text
-
-        if unit.type == UnitType.A_VALUES:
-            return unit.translated_text
 
         return unit.translated_text

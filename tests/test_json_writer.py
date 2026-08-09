@@ -308,3 +308,56 @@ class TestJsonWriter(unittest.TestCase):
             result["aValues"][3],
             "Utiliser",
         )
+
+
+    def test_write_preserves_relative_directory(self):
+        """Vérifie que l'arborescence relative est conservée."""
+
+        input_file = self.input_dir / "ads" / "ads.json"
+        input_file.parent.mkdir(parents=True)
+
+        data = {
+            "strName": "Test",
+            "strDesc": "This is a test."
+        }
+
+        with open(
+            input_file,
+            "w",
+            encoding="utf-8-sig",
+        ) as file:
+            json.dump(data, file)
+
+        project = TranslationProject()
+        project.root_directory = str(self.input_dir)
+
+        project.files["ads/ads.json"] = [
+            TextUnit(
+                uid="1",
+                relative_path="ads/ads.json",
+                json_path="$.strDesc",
+                field="strDesc",
+                source_text="This is a test.",
+                translated_text="Ceci est un test.",
+            )
+        ]
+
+        self.writer.write(
+            project,
+            str(self.output_dir),
+        )
+
+        output_file = self.output_dir / "ads" / "ads.json"
+
+        self.assertTrue(output_file.exists())
+
+        with open(
+            output_file,
+            encoding="utf-8-sig",
+        ) as file:
+            result = json.load(file)
+
+        self.assertEqual(
+            result["strDesc"],
+            "Ceci est un test.",
+        )
