@@ -56,12 +56,53 @@ class OstranautsRules:
 
     # Fichiers ou dossiers à exclure de la traduction
     EXCLUDED_FILES = {
-        "ai_training/",
-        "ai_training"
+        "ai_training/ai_training.json",
+        "ai_training/robots.js",
+        "ai_training/"
         "tokens/verbs.json",
         "tokens/names.json",
         "tokens/placeholders.json",
         "tokens/",
+        "audioemitters/", # Émetteurs sonores (technique)
+        "colors/",        # Couleurs (technique)
+        "condowners/",      # template des objets
+        "condtrigs/",
+        "chargeprofiles/",
+        "crewskins/",
+        "crime/",
+        "explosions/",
+        "gasrespires/",   # Consommation de gaz (technique)
+        "guipropmaps/",   # Mappings UI (technique)
+        "jobs/",
+        "lifeevents/",
+        "lights/",
+        "loot/",
+        "music/",
+        "music_stations/",
+        "names_first/",   # Prénoms (ne pas traduire)
+        "names_full/",    # Noms complets (ne pas traduire)
+        "names_last/",    # Noms de famille (ne pas traduire)
+        "names_robots/",
+        "names_ship/",    # Noms de vaisseaux (ne pas traduire)
+        "names_ship_adjectives/",
+        "names_ship_nouns/",
+        "parallax/",
+        "personspecs/",
+        "plot_beats/",
+        "plot_manager/",
+        "powerinfos/",    # Infos puissance (technique)
+        "schemas/",
+        "ships/",
+        "shipspecs/",
+        "slot_effects/",
+        "starsystem/",    # Système stellaire (technique)
+        "tickers/",       # Minutages (technique)
+        "tokens/",        # Dictionnaires techniques (verbes, noms)
+        "traitscores/",   # Scores de traits (technique)
+        "transit/",
+        "tsv/",
+        "wounds"
+        "zone_triggers/",
     }
 
     def is_translatable(self, key: str, value) -> bool:

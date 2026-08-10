@@ -43,7 +43,7 @@ class Config:
         "Traduction complète en français pour Ostranauts v1.0. Inclut tous les textes du jeu, interfaces, descriptions et dialogues.",
     )
     WORKSHOP_OUTPUT_PATH = Path(
-        os.getenv("WORKSHOP_OUTPUT_PATH", "./workshop_output")
+        os.getenv("WORKSHOP_OUTPUT_PATH", "./workshop")
     )
     GENERATE_WORKSHOP = os.getenv("GENERATE_WORKSHOP", "false").lower() == "true"
 

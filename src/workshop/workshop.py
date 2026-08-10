@@ -1,6 +1,7 @@
 """Génération de données pour le workshop."""
 import json
 from pathlib import Path
+from src.config.config import Config
 from src.models.translation_project import TranslationProject
 
 class WorkshopGenerator:
@@ -41,7 +42,12 @@ class WorkshopGenerator:
 
         # Copier les fichiers traduits depuis le projet
         # Les fichiers sont déjà écrits dans OUTPUT_PATH par JsonWriter
-        output_path = Path(project.root_directory).parent / "output"
+        repo_root = Path(__file__).resolve().parents[2]
+        output_path = (
+            Config.OUTPUT_PATH
+            if Config.OUTPUT_PATH.is_absolute()
+            else repo_root / Config.OUTPUT_PATH
+        )
 
         for relative_path, units in project.files.items():
             source_file = output_path / relative_path
@@ -57,6 +63,7 @@ class WorkshopGenerator:
 
         # Générer mod_info.json
         self._generate_mod_info(mod_dir)
+        self._copy_preview_image(mod_dir)
 
         return mod_dir
 
@@ -68,16 +75,55 @@ class WorkshopGenerator:
             "strModURL": self.mod_url,
             "strGameVersion": self.game_version,
             "strModVersion": self.mod_version,
-            "strNotes": self.notes
+            "strNotes": self.notes,
         }]
 
         mod_info_path = mod_dir / "mod_info.json"
         with open(mod_info_path, "w", encoding="utf-8") as f:
             json.dump(mod_info, f, ensure_ascii=False, indent=4)
 
-    def generate_loading_order(self, mods_dir: str, mod_names: list[str]) -> None:
+    def _copy_preview_image(self, mod_dir: Path) -> None:
+        """Copie l'image preview.png dans le dossier du mod."""
+        preview_source = Path(__file__).resolve().parents[2] / "img" / "preview.png"
+        preview_dest = mod_dir / "preview.png"
+
+        if preview_source.exists():
+            import shutil
+            shutil.copy2(preview_source, preview_dest)
+
+    def generate_loading_order(
+        self,
+        mods_dir: str,
+        mod_names: list[str],
+    ) -> None:
         """Génère le fichier loading_order.json pour Ostranauts_Data/."""
-        loading_order = {"aLoadOrder": mod_names}
+        if isinstance(mod_names, str):
+            mod_names = [mod_names]
+
+        a_load_order = ["core"] + [f"{name}|edit" for name in mod_names]
+
+        data_dir = Path(mods_dir) / "data"
+        if data_dir.exists() and data_dir.is_dir():
+            translated_dirs = sorted(
+                [p.name for p in data_dir.iterdir() if p.is_dir()]
+            )
+        else:
+            translated_dirs = []
+
+        ignore_patterns = [
+            f"StreamingAssets/data/{directory}"
+            for directory in translated_dirs
+            if directory != "names_full"
+        ]
+
+        loading_order = [
+            {
+                "strName": "Mod Loading Order",
+                "strNotes" : "To mod Ostranauts, place this loading_order.json file in your Mods/ folder (your game's Main Menu->MODS->Open Mod Folder will show you where it should be), along with your mod's folder. Your mod folder should match the folder structure in the zip where you found this file. Make sure your mod folder name matches it's entry in aLoadOrder list below. 'core' refers to the base game data, which usually needs to be loaded first unless you know what you're doing.",
+                "aLoadOrder": a_load_order,
+                "aIgnorePatterns": ignore_patterns,
+            }
+        ]
 
         loading_order_path = Path(mods_dir).parent / "loading_order.json"
         with open(loading_order_path, "w", encoding="utf-8") as f:

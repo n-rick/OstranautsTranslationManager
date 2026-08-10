@@ -94,13 +94,14 @@ class JsonExtractor:
                 )
                 continue
 
-            # Sinon on continue la récursion
-            self._process_value(
-                item,
-                f"{path}.{key}",
-                relative_path,
-                units,
-            )
+            # Pour les primitives non traduisibles, ne pas créer d'unité
+            if isinstance(item, (dict, list)):
+                self._process_value(
+                    item,
+                    f"{path}.{key}",
+                    relative_path,
+                    units,
+                )
 
     def _process_list(
         self,

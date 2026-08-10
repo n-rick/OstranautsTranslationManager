@@ -11,7 +11,11 @@ from src.ui.start_menu import StartMenu
 def main() -> None:
     """Initialise les composants et lance le processus de traduction."""
     start_menu = StartMenu()
-    scan_directory, selected_file, automatic, generate_workshop = start_menu.ask()
+    try:
+        scan_directory, selected_file, automatic, generate_workshop = start_menu.ask()
+    except KeyboardInterrupt:
+        print(f"\n\n {Config.RED} ⚠️ Arrêt demandé. {Config.RESET}")
+        return
 
     manager = TranslationManager(
         scanner=Scanner(),
@@ -51,7 +55,7 @@ def main() -> None:
         for failed_file in project.failed_files:
             print(f"   - {failed_file}")
 
-    print("=" * 70 + f"{Config.RESET}")
+    print("=" * 70 + f"{Config.RESET}\n")
 
 if __name__ == "__main__":
     main()

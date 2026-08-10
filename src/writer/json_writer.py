@@ -23,6 +23,13 @@ class JsonWriter:
                 print(f"[SKIP] Exclusion du fichier: {relative_path}")
                 continue
 
+            # Ne pas écrire les unités correspondant à des clés non traduisibles
+            units = [
+                unit
+                for unit in units
+                if self.rules.is_translatable(unit.field, unit.source_text)
+            ]
+
             input_file = Path(project.root_directory) / relative_path
             output_file = output_path / relative_path
 

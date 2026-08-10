@@ -52,8 +52,8 @@ class StartMenu:
 
     def _handle_single_file(self) -> tuple[bool, str, bool, bool]:
         """Gère le choix de scanner un fichier unique."""
-        file_path = input(f"{Config.GREEN}<> Saisir le chemin du fichier .json à traduire : \n(ex: steamapps/common/Ostranauts/Ostranauts_Data/StreamingAssets/data/info/infoNodes.json) {Config.RESET} \n").strip()
-
+        file_path = input(f"{Config.GREEN}<> Saisir ou coller le chemin du fichier .json à traduire \n(ex: steamapps/common/Ostranauts/Ostranauts_Data/StreamingAssets/data/ads/ads.json) : {Config.RESET} \n").strip()
+        print("\n CTRL+Q pour quitter à tout moment \n")
         if not Path(file_path).exists():
             print(Config.FILE_NOT_EXISTS)
             return self.ask()

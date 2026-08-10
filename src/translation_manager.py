@@ -55,9 +55,16 @@ class TranslationManager:
         # Charger la base de données au début
         self.database.load()
 
+
+        total_units = sum(len(units) for units in project.files.values())
+        processed_units = 0
+
         for relative_path, units in project.files.items():
             skip_file = False
             for unit in units:
+                processed_units += 1
+                self._print_progress(processed_units, total_units, relative_path)
+
                 # Vérifier si l'unité a déjà une traduction en mémoire
                 translation = self.database.get_translation(unit.uid)
                 if translation is not None:
@@ -91,6 +98,7 @@ class TranslationManager:
 
             if skip_file:
                 continue
+        print()
 
         # Sauvegarder la base de données à la fin
         self.database.save()
@@ -124,4 +132,15 @@ class TranslationManager:
             str(Path(Config.WORKSHOP_OUTPUT_PATH) / Config.WORKSHOP_MOD_NAME),
             [Config.WORKSHOP_MOD_NAME],
         )
-        print(f" {Config.GREEN} ✅ Mod Workshop généré dans: {mod_dir} {Config.RESET}")
+        print(f"\n{Config.GREEN} ✅ Mod Workshop généré dans: {mod_dir} {Config.RESET}\n")
+
+
+    def _print_progress(self, current: int, total: int, filename: str) -> None:
+        """Affiche une barre de progression ASCII."""
+        import sys
+        percent = current / total
+        bar_length = 40
+        filled_length = int(bar_length * percent)
+        bar = "█" * filled_length + "-" * (bar_length - filled_length)
+        sys.stdout.write(f"\r[{bar}] {current}/{total} ({percent:.1%}) - {filename}")
+        sys.stdout.flush()
