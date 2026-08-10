@@ -1,66 +1,65 @@
-"""Menu de démarrage de l'application."""
-
+"""Menu de démarrage pour choisir le mode de fonctionnement."""
 from pathlib import Path
 from src.config.config import Config
 
-
 class StartMenu:
-    """Gère les choix initiaux de l'utilisateur."""
+    """Affiche le menu de démarrage et gère les choix de l'utilisateur."""
 
-    def ask(self) -> tuple[bool, Path | None, bool]:
-        """Demande le périmètre et le mode de traduction.
+    def ask(self) -> tuple[bool, str, bool, bool]:
+        """Demande à l'utilisateur le mode de fonctionnement.
 
         Returns:
-            tuple:
-                - True si tout le répertoire Data doit être traité.
-                - Le chemin du fichier si un seul fichier est sélectionné.
-                - True pour le mode automatique, False pour le mode avec validation.
+            tuple: (scan_directory, file_path, automatic, generate_workshop)
         """
-        print()
-        print("=" * 40)
-        print(" Ostranauts Translation Manager")
-        print("=" * 40)
-        print()
-        print("1 - " + Config.TRANSLATE_ALL)
-        print("2 - " + Config.TRANSLATE_SINGLE)
-        print("3 - " + Config.QUIT)
-        print()
+        print("\n" + "=" * 70)
+        print("  Ostranauts Translation Manager")
+        print("=" * 70)
+        print(Config.CHOICE)
+        print("  <> 1. " + Config.TRANSLATE_ALL)
+        print("  <> 2. " + Config.TRANSLATE_SINGLE)
+        print("  <> 3. " + Config.QUIT)
+        print("=" * 70)
 
-        while True:
-            choice = input(Config.CHOICE).strip()
+        choice = input("> ").strip()
 
-            if choice == "1":
-                scan_directory = True
-                selected_file = None
-                break
+        if choice == "1":
+            return self._handle_scan_directory()
+        elif choice == "2":
+            return self._handle_single_file()
+        elif choice == "3":
+            exit(0)
+        else:
+            print("Choix invalide. Veuillez réessayer.")
+            return self.ask()
 
-            if choice == "2":
-                path = Path(
-                    input(Config.GREEN + Config.FILE_PATH_TO_TRANSLATE).strip()
-                )
+    def _handle_scan_directory(self) -> tuple[bool, str, bool, bool]:
+        """Gère le choix de scanner un répertoire."""
+        scan_dir = input("Entrée pour utiliser OSTRANAUTS_DATA_PATH"
+        ).strip()
+        if not scan_dir:
+            scan_dir = Config.OSTRANAUTS_DATA_PATH
 
-                if path.is_file() and path.suffix.lower() == ".json":
-                    scan_directory = False
-                    selected_file = path
-                    break
+        # Vérifier que le répertoire existe
+        if not Path(scan_dir).exists():
+            print(f"{Config.RED}[ERROR] ⚠️ Le répertoire n'existe pas: {scan_dir} {Config.RESET}")
+            return self.ask()
 
-                print(Config.RED + Config.FILE_NOT_EXISTS + Config.RESET)
+        automatic = input(f"{Config.GREEN} <> Mode automatique ? (o/n): {Config.RESET}").strip().lower() == "o"
+        generate_workshop = (
+            input(Config.GENERATE_WORKSHOP_QUESTION).strip().lower() == "o"
+        )
+        return True, scan_dir, automatic, generate_workshop
 
-            if choice == "3":
-                print(Config.RESET)
-                exit()
+    def _handle_single_file(self) -> tuple[bool, str, bool, bool]:
+        """Gère le choix de scanner un fichier unique."""
+        file_path = input(f"{Config.GREEN}<> Saisir le chemin du fichier .json à traduire : \n(ex: steamapps/common/Ostranauts/Ostranauts_Data/StreamingAssets/data/info/infoNodes.json) {Config.RESET} \n").strip()
 
-        print()
-        print(Config.RESET)
-        print("1 - Traduction automatique")
-        print("2 - Traduction avec validation")
-        print()
+        if not Path(file_path).exists():
+            print(Config.FILE_NOT_EXISTS)
+            return self.ask()
 
-        while True:
-            mode = input(Config.CHOICE).strip()
-
-            if mode == "1":
-                return scan_directory, selected_file, True
-
-            if mode == "2":
-                return scan_directory, selected_file, False
+        automatic = input(" <> Mode automatique ? (o/n): ").strip().lower() == "o"
+        generate_workshop = (
+            input(Config.GENERATE_WORKSHOP_QUESTION).strip().lower() == "o"
+        )
+        return False, file_path, automatic, generate_workshop

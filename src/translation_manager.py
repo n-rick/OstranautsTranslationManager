@@ -1,5 +1,5 @@
 """Gestion du flux principal de traduction des unités de texte."""
-
+from pathlib import Path
 from src.database.database import Database
 from src.models.translation_project import TranslationProject
 from src.models.translation_status import TranslationStatus
@@ -10,7 +10,6 @@ from src.ui.console import ConsoleUI
 from src.translator.translator import Translator
 from src.models.text_unit import TextUnit
 from src.writer.json_writer import JsonWriter
-
 
 class TranslationManager:
     """Orchestre l'analyse, la traduction et la sauvegarde des textes."""
@@ -32,110 +31,97 @@ class TranslationManager:
         self.cached_count = 0
         self.translated_count = 0
 
-    def run(self,
-            directory: str,
-            automatic: bool,
-        ) -> TranslationProject:
+    def run(
+        self, directory: str, automatic: bool, generate_workshop: bool = False
+    ) -> TranslationProject:
         """Traduit les fichiers JSON d'un répertoire."""
-
         project = self.scanner.scan(directory)
+        return self._process_project(project, automatic, generate_workshop)
 
-        return self._process_project(
-            project,
-            automatic
-        )
-
-    
-    def run_file(self,
-                 file_path: str,
-                 automatic: bool,
-        ) -> TranslationProject:
+    def run_file(
+        self, file_path: str, automatic: bool, generate_workshop: bool = False
+    ) -> TranslationProject:
         """Traduit un fichier JSON unique."""
-
         project = self.scanner.scan_file(file_path)
+        return self._process_project(project, automatic, generate_workshop)
 
-        return self._process_project(
-            project,
-            automatic,
-        )
-    
-    
     def _process_project(
         self,
         project: TranslationProject,
         automatic: bool,
+        generate_workshop: bool = False,
     ) -> TranslationProject:
         """Traite les unités du projet selon le mode choisi."""
-
-        self.database.load(Config.DATABASE_PATH)
-
-        total_units = sum(
-            len(units)
-            for units in project.files.values()
-        )
-
-        processed_units = 0
+        # Charger la base de données au début
+        self.database.load()
 
         for relative_path, units in project.files.items():
-
             skip_file = False
-
             for unit in units:
-
+                # Vérifier si l'unité a déjà une traduction en mémoire
                 translation = self.database.get_translation(unit.uid)
-
                 if translation is not None:
-                    unit.translated_text = translation
+                    unit.translated_text = translation.get("translation", translation)
                     self.cached_count += 1
                     continue
 
+                # Traduire automatiquement
                 self.translator.translate(unit)
+                unit.status = TranslationStatus.AUTO_TRANSLATED
 
-                # Google n'a pas trouvé de traduction.
-                if unit.status == TranslationStatus.NEW:
-                    if automatic:
-                        continue
-
+                # Mode manuel : demander une revue
                 if not automatic:
-                    action = self.console.review(
-                        relative_path,
-                        unit,
-                    )
-
+                    action = self.console.review(relative_path, unit)
                     if action == ReviewAction.EDIT:
                         self.console.edit(unit)
-
                     elif action == ReviewAction.SKIP:
                         continue
-
                     elif action == ReviewAction.NEXT_FILE:
                         skip_file = True
                         break
-
                     elif action == ReviewAction.QUIT:
                         self.database.save()
+                        project.cached_count = self.cached_count
+                        project.translated_count = self.translated_count
+                        return project
 
-
+                # Mettre à jour la base de données avec la nouvelle traduction
                 self.database.update(unit)
                 self.translated_count += 1
-
-                processed_units += 1
-
-                if automatic:
-                    self.console.progress(processed_units,total_units)
 
             if skip_file:
                 continue
 
+        # Sauvegarder la base de données à la fin
         self.database.save()
 
-        self.writer.write(
-            project,
-            Config.OUTPUT_PATH,
-        )
+        # Écrire les fichiers traduits
+        self.writer.write(project, Config.OUTPUT_PATH)
+
+        # Générer le mod Workshop si demandé
+        if generate_workshop:
+            self._generate_workshop(project)
 
         project.cached_count = self.cached_count
         project.translated_count = self.translated_count
-
         return project
-    
+
+    def _generate_workshop(self, project: TranslationProject) -> None:
+        """Génère un mod Workshop à partir du projet traduit."""
+        from src.workshop.workshop import WorkshopGenerator
+
+        workshop_gen = WorkshopGenerator(
+            mod_name=Config.WORKSHOP_MOD_NAME,
+            author=Config.WORKSHOP_AUTHOR,
+            mod_version=Config.WORKSHOP_MOD_VERSION,
+            game_version=Config.WORKSHOP_GAME_VERSION,
+            mod_url=Config.WORKSHOP_MOD_URL,
+            notes=Config.WORKSHOP_NOTES,
+        )
+
+        mod_dir = workshop_gen.build(project, Config.WORKSHOP_OUTPUT_PATH)
+        workshop_gen.generate_loading_order(
+            str(Path(Config.WORKSHOP_OUTPUT_PATH) / Config.WORKSHOP_MOD_NAME),
+            [Config.WORKSHOP_MOD_NAME],
+        )
+        print(f" {Config.GREEN} ✅ Mod Workshop généré dans: {mod_dir} {Config.RESET}")
