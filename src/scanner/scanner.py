@@ -1,5 +1,6 @@
 """Scan des fichiers JSON du projet."""
 from pathlib import Path
+from src.config.config import Config
 from src.models.text_unit import TextUnit
 from src.models.translation_project import TranslationProject
 from src.scanner.json_extractor import JsonExtractor
@@ -110,7 +111,7 @@ class Scanner:
                 )
             except Exception as error:
                 project.failed_files.append(str(file))
-                print(f"[ERROR] {file}")
+                print(f"{Config.RED} [ERROR] {file}{Config.RESET}")
                 print(error)
 
         project.root_directory = directory
@@ -171,7 +172,7 @@ class Scanner:
             return project
         except Exception as error:
             project.failed_files.append(str(file))
-            print(f"[ERROR] {file}")
+            print(f"{Config.RED}[ERROR] {file}{Config.RESET}")
             print(error)
             project.root_directory = str(Path(file_path).parent)
             return project
