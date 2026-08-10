@@ -11,6 +11,9 @@ load_dotenv(".env.local", override=True)
 class Config:
     """Contient les paramètres globaux utilisés par l'application."""
 
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    RESET = "\033[0m"
     OSTRANAUTS_DATA_PATH = Path(os.getenv("OSTRANAUTS_DATA_PATH", ""))
     OUTPUT_PATH = Path(os.getenv("OUTPUT_PATH", "./output"))
     REPORT_PATH = Path(os.getenv("REPORT_PATH", "./reports"))

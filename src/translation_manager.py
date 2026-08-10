@@ -67,7 +67,14 @@ class TranslationManager:
     ) -> TranslationProject:
         """Traite les unités du projet selon le mode choisi."""
 
-        self.database.load()
+        self.database.load(Config.DATABASE_PATH)
+
+        total_units = sum(
+            len(units)
+            for units in project.files.values()
+        )
+
+        processed_units = 0
 
         for relative_path, units in project.files.items():
 
@@ -84,7 +91,10 @@ class TranslationManager:
 
                 self.translator.translate(unit)
 
-                unit.status = TranslationStatus.AUTO_TRANSLATED
+                # Google n'a pas trouvé de traduction.
+                if unit.status == TranslationStatus.NEW:
+                    if automatic:
+                        continue
 
                 if not automatic:
                     action = self.console.review(
@@ -105,13 +115,14 @@ class TranslationManager:
                     elif action == ReviewAction.QUIT:
                         self.database.save()
 
-                        project.cached_count = self.cached_count
-                        project.translated_count = self.translated_count
-
-                        return project
 
                 self.database.update(unit)
                 self.translated_count += 1
+
+                processed_units += 1
+
+                if automatic:
+                    self.console.progress(processed_units,total_units)
 
             if skip_file:
                 continue

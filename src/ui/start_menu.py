@@ -23,6 +23,7 @@ class StartMenu:
         print()
         print("1 - " + Config.TRANSLATE_ALL)
         print("2 - " + Config.TRANSLATE_SINGLE)
+        print("3 - " + Config.QUIT)
         print()
 
         while True:
@@ -35,7 +36,7 @@ class StartMenu:
 
             if choice == "2":
                 path = Path(
-                    input(Config.FILE_PATH_TO_TRANSLATE).strip()
+                    input(Config.GREEN + Config.FILE_PATH_TO_TRANSLATE).strip()
                 )
 
                 if path.is_file() and path.suffix.lower() == ".json":
@@ -43,9 +44,14 @@ class StartMenu:
                     selected_file = path
                     break
 
-                print(Config.FILE_NOT_EXISTS)
+                print(Config.RED + Config.FILE_NOT_EXISTS + Config.RESET)
+
+            if choice == "3":
+                print(Config.RESET)
+                exit()
 
         print()
+        print(Config.RESET)
         print("1 - Traduction automatique")
         print("2 - Traduction avec validation")
         print()

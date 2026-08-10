@@ -8,24 +8,24 @@ from src.rules.json_keys import JsonKeys
 class OstranautsRules:
 
     TRANSLATABLE_KEYS = {
-        "strTitle",
-        "strDesc",
-        "strTooltip",
-        "strBody",
-        "strMainText",
-        "strMainFriendly",
-        "strNameShort",
-        "strFriendlyName",
-        "strFriendlyDescription",
-        "strNameFriendly",
-        "strArticleTitle",
         "strArticleBody",
+        "strArticleTitle",
+        "strBody",
+        "strDesc",
+        "strFriendlyDescription",
+        "strFriendlyName",
+        "strMainFriendly",
+        "strMainText",
+        "strNameFriendly",
+        "strNameShort",
         "strNodeLabel",
+        "strTitle",
+        "strTooltip",
     }
     
     TRANSLATABLE_OVERRIDE_KEYS = {
-        "strTitle",
         "strDesc",
+        "strTitle",
     }
 
     def is_translatable(

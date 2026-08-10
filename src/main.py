@@ -39,15 +39,15 @@ def main() -> None:
             )
 
     except KeyboardInterrupt:
-        print("\n\nArrêt demandé.")
+        print(f"{Config.RED} Arrêt demandé. {Config.RESET}")
 
     if project is None:
         return
 
-    print(f"{Config.FILE_SCANNED} : {project.scanned_files}")
-    print(f"{Config.FROM_MEMORY} : {project.cached_count}")
-    print(f"{Config.NEW_TRANSLATIONS} : {project.translated_count}")
-    print(f"{Config.TEXT_UNITS} : {sum(len(v) for v in project.files.values())}")
+    print(f"{Config.GREEN}{Config.FILE_SCANNED} : {project.scanned_files}")
+    print(f"{Config.GREEN}{Config.FROM_MEMORY} : {project.cached_count}")
+    print(f"{Config.GREEN}{Config.NEW_TRANSLATIONS} : {project.translated_count}")
+    print(f"{Config.GREEN}{Config.TEXT_UNITS} : {sum(len(v) for v in project.files.values())} {Config.RESET}")
 
 
 if __name__ == "__main__":

@@ -39,3 +39,31 @@ class ConsoleUI:
 
         if new_translation:
             unit.translated_text = new_translation
+
+
+    def progress(
+        self,
+        current: int,
+        total: int,
+    ) -> None:
+        """Affiche la progression de la traduction."""
+
+        if total == 0:
+            return
+
+        percentage = int((current / total) * 100)
+
+        width = 30
+        filled = int(width * current / total)
+
+        bar = "█" * filled + "░" * (width - filled)
+
+        print(
+            f"\rTraduction : [{bar}] "
+            f"{Config.GREEN}{percentage:3d}% ({current}/{total})",
+            end="",
+            flush=True,
+        )
+
+        if current == total:
+            print()

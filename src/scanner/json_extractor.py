@@ -68,9 +68,11 @@ class JsonExtractor:
         relative_path: str,
         units: list[TextUnit],
     ) -> None:
-        """Parcourt un dictionnaire JSON et transmet ses valeurs."""
+        """Parcourt un dictionnaire JSON."""
+
         for key, item in value.items():
-            
+
+            # Structure spéciale Ostranauts
             special_units = self.rules.extract_special_units(
                 key,
                 item,
@@ -81,18 +83,18 @@ class JsonExtractor:
             if special_units:
                 units.extend(special_units)
                 continue
-            
-            if self.rules.is_translatable(key, item):
 
+            # Champ texte classique
+            if self.rules.is_translatable(key, item):
                 self._process_string(
                     item,
                     f"{path}.{key}",
                     relative_path,
                     units,
                 )
-
                 continue
-            
+
+            # Sinon on continue la récursion
             self._process_value(
                 item,
                 f"{path}.{key}",
@@ -123,8 +125,8 @@ class JsonExtractor:
         relative_path: str,
         units: list[TextUnit],
     ) -> None:
-        """Crée une unité de texte à partir d'une chaîne non vide."""
-        
+        """Crée une unité de texte."""
+
         if not value.strip():
             return
 
