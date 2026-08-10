@@ -3,6 +3,8 @@ import json
 from pathlib import Path
 from typing import Optional
 
+from src.config.config import Config
+
 class Database:
     """Stocke et récupère les traductions déjà effectuées."""
 
@@ -39,7 +41,7 @@ class Database:
             with open(self.db_path, "w", encoding="utf-8") as f:
                 json.dump(self.translations, f, ensure_ascii=False, indent=4)
         except Exception as e:
-            print(f"[ERROR] Impossible de sauvegarder la base de données: {e}")
+            print(f"{Config.RED} [ERROR] Impossible de sauvegarder la base de données: {e}\n{Config.RESET}")
 
     def get_translation(self, uid: str) -> Optional[str]:
         """Récupère une traduction depuis la base de données."""

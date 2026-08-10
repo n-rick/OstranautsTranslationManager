@@ -30,6 +30,7 @@ class TranslationManager:
         self.writer = writer
         self.cached_count = 0
         self.translated_count = 0
+        self._last_progress_length = 0
 
     def run(
         self, directory: str, automatic: bool, generate_workshop: bool = False
@@ -138,9 +139,26 @@ class TranslationManager:
     def _print_progress(self, current: int, total: int, filename: str) -> None:
         """Affiche une barre de progression ASCII."""
         import sys
-        percent = current / total
-        bar_length = 40
+        from pathlib import Path
+
+        display_name = Path(filename).name
+        max_name_length = 20
+        if len(display_name) > max_name_length:
+            display_name = f"...{display_name[-(max_name_length - 3):]}"
+
+        percent = current / total if total else 0
+        bar_length = 30
         filled_length = int(bar_length * percent)
         bar = "█" * filled_length + "-" * (bar_length - filled_length)
-        sys.stdout.write(f"\r[{bar}] {current}/{total} ({percent:.1%}) - {filename}")
+        message = f"[{bar}] {current}/{total} ({percent:.1%}) - {display_name}"
+
+        if len(message) < self._last_progress_length:
+            message += " " * (self._last_progress_length - len(message))
+
+        if sys.stdout.isatty():
+            sys.stdout.write(f"\033[2K\r{message}")
+        else:
+            sys.stdout.write(f"\r{message}")
+
         sys.stdout.flush()
+        self._last_progress_length = len(message)

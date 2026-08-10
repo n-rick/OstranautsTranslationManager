@@ -1,5 +1,6 @@
 """Scan des fichiers JSON du projet."""
 from pathlib import Path
+from src.config.config import Config
 from src.models.text_unit import TextUnit
 from src.models.translation_project import TranslationProject
 from src.scanner.json_extractor import JsonExtractor
@@ -38,7 +39,7 @@ class Scanner:
 
     # Répertoires à exclure (technique, pas de texte à traduire)
     EXCLUDED_DIRS = {
-        "ai_training"    # Décision de l'IA
+        "ai_training",    # Décision de l'IA
         "audioemitters", # Émetteurs sonores (technique)
         "colors",        # Couleurs (technique)
         "condowners",      # template des objets
@@ -77,8 +78,12 @@ class Scanner:
         "traitscores",   # Scores de traits (technique)
         "transit",
         "tsv",
-        "wounds"
+        "wounds",
         "zone_triggers",
+    }
+
+    EXCLUDED_FILE_NAMES = {
+        "interactions_encounters.json",
     }
 
     def __init__(self) -> None:
@@ -88,7 +93,10 @@ class Scanner:
     def scan(self, directory: str) -> TranslationProject:
         """Retourne toutes les unités de texte extraites des fichiers JSON du répertoire."""
         project = TranslationProject()
-        files = sorted(Path(directory).rglob("*.json"))
+        files = sorted(
+            Path(directory).rglob("*.json"),
+            key=lambda file: str(file.relative_to(directory)).lower(),
+        )
 
         for file in files:
             project.scanned_files += 1
@@ -103,7 +111,7 @@ class Scanner:
                 )
             except Exception as error:
                 project.failed_files.append(str(file))
-                print(f"[ERROR] {file}")
+                print(f"{Config.RED} [ERROR] {file}{Config.RESET}")
                 print(error)
 
         project.root_directory = directory
@@ -111,16 +119,21 @@ class Scanner:
 
     def _should_exclude_file(self, relative_path: str) -> bool:
         """Vérifie si un fichier doit être exclu du scan."""
-        # Extraire le premier niveau de dossier
+        # Extraire tous les segments de chemin
         parts = relative_path.split("/")
-        if len(parts) > 0:
-            first_dir = parts[0]
-            # Exclure si le dossier est dans EXCLUDED_DIRS
-            if first_dir in self.EXCLUDED_DIRS:
-                return True
-            # Inclure uniquement si le dossier est dans TRANSLATABLE_DIRS (si la liste est non vide)
-            if self.TRANSLATABLE_DIRS and first_dir not in self.TRANSLATABLE_DIRS:
-                return True
+
+        # Exclure un fichier s'il correspond à un nom de fichier exclu
+        if Path(relative_path).name in self.EXCLUDED_FILE_NAMES:
+            return True
+
+        # Exclure un fichier si un segment correspond à un dossier exclu
+        if any(part in self.EXCLUDED_DIRS for part in parts):
+            return True
+
+        # Inclure uniquement si le premier niveau est dans TRANSLATABLE_DIRS (si la liste est non vide)
+        if parts and self.TRANSLATABLE_DIRS and parts[0] not in self.TRANSLATABLE_DIRS:
+            return True
+
         return False
 
 
@@ -159,7 +172,7 @@ class Scanner:
             return project
         except Exception as error:
             project.failed_files.append(str(file))
-            print(f"[ERROR] {file}")
+            print(f"{Config.RED}[ERROR] {file}{Config.RESET}")
             print(error)
             project.root_directory = str(Path(file_path).parent)
             return project
