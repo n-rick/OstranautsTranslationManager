@@ -288,4 +288,19 @@ Fichier loading_order.json (exemple)
     
       traitscores/
       Scores de traits
-    
+
+## 🤝 Contribuer
+
+Les contributions sont les bienvenues ! Ouvre une Issue ou un Pull Request pour :
+
+- Signaler un bug
+- Proposer une amélioration
+- Ajouter une nouvelle fonctionnalité
+
+## 📜 Licence
+
+Ce projet est sous licence MIT. Tu es libre de l’utiliser, le modifier et le distribuer.
+
+## ✨ Bonnes traductions !
+
+Pour toute question, n’hésite pas à me contacter.
