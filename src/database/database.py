@@ -1,7 +1,7 @@
 """Gestion de la base de données de mémoire de traduction."""
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional, Tuple
 
 from src.config.config import Config
 
@@ -22,7 +22,20 @@ class Database:
         try:
             if self.db_path.exists():
                 with open(self.db_path, "r", encoding="utf-8") as f:
-                    self.translations = json.load(f)
+                    content = f.read()
+                try:
+                    self.translations = json.loads(content)
+                except json.JSONDecodeError as e:
+                    backup_path = self._backup_corrupt_file()
+                    print(
+                        f"[WARNING] Base corrompue détectée : {self.db_path}."
+                        f" Copie de sauvegarde : {backup_path}"
+                    )
+                    self.translations = self._recover_translations(content)
+                    if self.translations is None:
+                        self.translations = {}
+                    else:
+                        self.save()
             else:
                 # Créer le dossier parent si nécessaire
                 self.db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -32,6 +45,64 @@ class Database:
             print(f"[WARNING] Impossible de charger la base de données: {e}")
             self.translations = {}
             self._loaded = True
+
+    def _backup_corrupt_file(self) -> Path:
+        backup_path = self.db_path.with_suffix(self.db_path.suffix + ".corrupt.bak")
+        self.db_path.rename(backup_path)
+        return backup_path
+
+    def _recover_translations(self, content: str) -> Optional[dict]:
+        """Tente de récupérer les traductions à partir d'une base JSON partiellement valide."""
+        decoder = json.JSONDecoder()
+        text = content.strip()
+        if not text.startswith("{"):
+            return None
+
+        idx = 1
+        recovered = {}
+        length = len(text)
+
+        def _skip_whitespace(i: int) -> int:
+            while i < length and text[i].isspace():
+                i += 1
+            return i
+
+        while True:
+            idx = _skip_whitespace(idx)
+            if idx >= length or text[idx] == "}":
+                break
+
+            try:
+                key, key_len = decoder.raw_decode(text[idx:])
+            except json.JSONDecodeError:
+                break
+            idx += key_len
+            idx = _skip_whitespace(idx)
+            if idx >= length or text[idx] != ":":
+                break
+            idx += 1
+            idx = _skip_whitespace(idx)
+
+            try:
+                value, value_len = decoder.raw_decode(text[idx:])
+            except json.JSONDecodeError:
+                break
+            idx += value_len
+
+            recovered[key] = value
+            idx = _skip_whitespace(idx)
+            if idx >= length:
+                break
+            if text[idx] == ",":
+                idx += 1
+                continue
+            if text[idx] == "}":
+                break
+            break
+
+        if recovered:
+            return recovered
+        return None
 
     def save(self) -> None:
         """Sauvegarde les traductions dans le fichier."""
@@ -48,6 +119,20 @@ class Database:
         if not self._loaded:
             self.load()
         return self.translations.get(uid)
+
+    def get_last_entry(self) -> Tuple[Optional[str], Optional[dict]]:
+        """Retourne la dernière entrée enregistrée dans la base de données.
+
+        Renvoie un tuple `(uid, entry)` ou `(None, None)` si la base est vide.
+        """
+        if not self._loaded:
+            self.load()
+
+        if not self.translations:
+            return None, None
+
+        last_uid, last_entry = next(reversed(self.translations.items()))
+        return last_uid, last_entry
 
     def update(self, text_unit) -> None:
         """Met à jour une traduction dans la base de données."""

@@ -82,11 +82,11 @@ def main() -> None:
     try:
         if scan_directory:
             project = manager.run(
-                selected_file, automatic, generate_workshop
+                selected_file, automatic, generate_workshop, args.resume
             )
         else:
             project = manager.run_file(
-                selected_file, automatic, generate_workshop
+                selected_file, automatic, generate_workshop, args.resume
             )
     except KeyboardInterrupt:
         print(f"\n\n {Config.RED} ⚠️ Arrêt demandé. {Config.RESET}")

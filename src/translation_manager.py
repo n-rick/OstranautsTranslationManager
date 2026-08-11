@@ -1,4 +1,5 @@
 """Gestion du flux principal de traduction des unités de texte."""
+import json
 from pathlib import Path
 from src.database.database import Database
 from src.models.translation_project import TranslationProject
@@ -34,24 +35,33 @@ class TranslationManager:
         self._last_progress_length = 0
 
     def run(
-        self, directory: str, automatic: bool, generate_workshop: bool = False
+        self,
+        directory: str,
+        automatic: bool,
+        generate_workshop: bool = False,
+        resume: bool = False,
     ) -> TranslationProject:
         """Traduit les fichiers JSON d'un répertoire."""
         project = self.scanner.scan(directory)
-        return self._process_project(project, automatic, generate_workshop)
+        return self._process_project(project, automatic, generate_workshop, resume)
 
     def run_file(
-        self, file_path: str, automatic: bool, generate_workshop: bool = False
+        self,
+        file_path: str,
+        automatic: bool,
+        generate_workshop: bool = False,
+        resume: bool = False,
     ) -> TranslationProject:
         """Traduit un fichier JSON unique."""
         project = self.scanner.scan_file(file_path)
-        return self._process_project(project, automatic, generate_workshop)
+        return self._process_project(project, automatic, generate_workshop, resume)
 
     def _process_project(
         self,
         project: TranslationProject,
         automatic: bool,
         generate_workshop: bool = False,
+        resume: bool = False,
     ) -> TranslationProject:
         """Traite les unités du projet selon le mode choisi."""
         # Charger la base de données au début
@@ -81,8 +91,23 @@ class TranslationManager:
                     [Config.WORKSHOP_MOD_NAME],
                 )
 
+        resume_file = None
+        resume_started = True
+        if resume:
+            resume_file = self._determine_resume_file()
+            if resume_file:
+                resume_started = False
+                print(
+                    f"{Config.GREEN}Reprise détectée à partir de la dernière entrée de la BDD : {resume_file}{Config.RESET}"
+                )
+
         try:
             for relative_path, units in project.files.items():
+                if not resume_started:
+                    if relative_path != resume_file:
+                        continue
+                    resume_started = True
+
                 current_file = relative_path
                 skip_file = False
                 file_has_error = False
@@ -167,6 +192,50 @@ class TranslationManager:
         project.cached_count = self.cached_count
         project.translated_count = self.translated_count
         return project
+
+    def _determine_resume_file(self) -> str | None:
+        """Détermine le fichier à partir duquel reprendre en utilisant la dernière entrée BDD."""
+        last_uid, last_entry = self.database.get_last_entry()
+        if not last_entry:
+            return None
+
+        relative_path = last_entry.get("relative_path")
+        json_path = last_entry.get("path")
+        translation = last_entry.get("translation")
+        if not relative_path or not json_path:
+            return None
+
+        output_file = Path(Config.OUTPUT_PATH) / relative_path
+        if output_file.exists():
+            try:
+                if self._output_contains_translation(output_file, json_path, translation):
+                    return relative_path
+                print(
+                    f"{Config.RED}La dernière entrée de la BDD n'a pas été retrouvée dans le fichier de sortie {output_file}."
+                    f" Reprise depuis le fichier source {relative_path}.{Config.RESET}"
+                )
+            except Exception:
+                pass
+
+        return relative_path
+
+    def _output_contains_translation(
+        self, output_file: Path, json_path: str, translation: str
+    ) -> bool:
+        with open(output_file, "r", encoding="utf-8-sig") as file:
+            data = json.load(file)
+
+        value = self._extract_value_from_json_path(data, json_path)
+        return value == translation
+
+    def _extract_value_from_json_path(self, data, json_path: str):
+        clean_path = json_path.removeprefix("$")
+        clean_path = clean_path.replace("[", ".").replace("]", "")
+        tokens = [token for token in clean_path.split(".") if token]
+        current = data
+        for token in tokens:
+            current = current[int(token)] if token.isdigit() else current[token]
+        return current
 
     def _persist_file_progress(self, project: TranslationProject, relative_path: str) -> None:
         """Sauvegarde les progrès pour un fichier partiellement ou totalement traité."""
