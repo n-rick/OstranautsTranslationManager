@@ -46,7 +46,7 @@ class StartMenu:
 
         automatic = input(f"{Config.GREEN} <> Mode automatique ? (o/n): {Config.RESET}").strip().lower() == "o"
         generate_workshop = (
-            input(Config.GENERATE_WORKSHOP_QUESTION).strip().lower() == "o"
+            input(f"{Config.GREEN} <> {Config.GENERATE_WORKSHOP_QUESTION}{Config.RESET}").strip().lower() == "o"
         )
         return True, scan_dir, automatic, generate_workshop
 
@@ -58,8 +58,8 @@ class StartMenu:
             print(Config.FILE_NOT_EXISTS)
             return self.ask()
 
-        automatic = input(" <> Mode automatique ? (o/n): ").strip().lower() == "o"
+        automatic = input(f"{Config.GREEN} <> Mode automatique ? (o/n): {Config.RESET}").strip().lower() == "o"
         generate_workshop = (
-            input(Config.GENERATE_WORKSHOP_QUESTION).strip().lower() == "o"
+            input(f"{Config.GREEN} <> {Config.GENERATE_WORKSHOP_QUESTION}{Config.RESET}").strip().lower() == "o"
         )
         return False, file_path, automatic, generate_workshop

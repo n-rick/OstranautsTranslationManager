@@ -1,6 +1,7 @@
 """Écriture des fichiers JSON traduits."""
 import json
 from pathlib import Path
+from src.config.config import Config
 from src.models.text_unit import TextUnit
 from src.models.translation_project import TranslationProject
 from src.rules.ostranauts_rules import OstranautsRules
@@ -18,25 +19,32 @@ class JsonWriter:
         output_path = Path(output_directory)
 
         for relative_path, units in project.files.items():
-            # Vérifier si le fichier doit être exclu
-            if self.rules.should_exclude_file(relative_path):
-                print(f"[SKIP] Exclusion du fichier: {relative_path}")
-                continue
+            self.write_file(project, relative_path, output_directory)
 
-            # Ne pas écrire les unités correspondant à des clés non traduisibles
-            units = [
-                unit
-                for unit in units
-                if self.rules.is_translatable(unit.field, unit.source_text)
-            ]
+    def write_file(
+        self, project: TranslationProject, relative_path: str, output_directory: str
+    ) -> None:
+        """Écrit un seul fichier traduit si possible."""
+        if self.rules.should_exclude_file(relative_path):
+            print(f"{Config.RED}[SKIP] Exclusion du fichier: {relative_path}{Config.RESET}")
+            return
 
-            input_file = Path(project.root_directory) / relative_path
-            output_file = output_path / relative_path
+        units = [
+            unit
+            for unit in project.files.get(relative_path, [])
+            if self.rules.is_translatable(unit.field, unit.source_text)
+            and unit.translated_text
+        ]
 
-            # S'assurer que le dossier parent existe
-            output_file.parent.mkdir(parents=True, exist_ok=True)
+        if not units:
+            return
 
-            self._write_file(input_file, output_file, units)
+        output_path = Path(output_directory)
+        input_file = Path(project.root_directory) / relative_path
+        output_file = output_path / relative_path
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+
+        self._write_file(input_file, output_file, units)
 
     def _write_file(
         self, input_file: Path, output_file: Path, units: list[TextUnit]

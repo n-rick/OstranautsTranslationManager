@@ -10,6 +10,7 @@ from src.ui.console import ConsoleUI
 from src.translator.translator import Translator
 from src.models.text_unit import TextUnit
 from src.writer.json_writer import JsonWriter
+from src.workshop.workshop import WorkshopGenerator
 
 class TranslationManager:
     """Orchestre l'analyse, la traduction et la sauvegarde des textes."""
@@ -56,64 +57,135 @@ class TranslationManager:
         # Charger la base de données au début
         self.database.load()
 
-
         total_units = sum(len(units) for units in project.files.values())
         processed_units = 0
+        current_file = ""
+        workshop_gen = None
+        workshop_mod_dir = None
 
-        for relative_path, units in project.files.items():
-            skip_file = False
-            for unit in units:
-                processed_units += 1
-                self._print_progress(processed_units, total_units, relative_path)
+        if generate_workshop and automatic:
+            project_path = Path(project.root_directory).resolve()
+            data_path = Path(Config.OSTRANAUTS_DATA_PATH).resolve()
+            if project_path == data_path:
+                workshop_gen = WorkshopGenerator(
+                    mod_name=Config.WORKSHOP_MOD_NAME,
+                    author=Config.WORKSHOP_AUTHOR,
+                    mod_version=Config.WORKSHOP_MOD_VERSION,
+                    game_version=Config.WORKSHOP_GAME_VERSION,
+                    mod_url=Config.WORKSHOP_MOD_URL,
+                    notes=Config.WORKSHOP_NOTES,
+                )
+                workshop_mod_dir = workshop_gen.build(project, Config.WORKSHOP_OUTPUT_PATH)
+                workshop_gen.generate_loading_order(
+                    str(workshop_mod_dir),
+                    [Config.WORKSHOP_MOD_NAME],
+                )
 
-                # Vérifier si l'unité a déjà une traduction en mémoire
-                translation = self.database.get_translation(unit.uid)
-                if translation is not None:
-                    unit.translated_text = translation.get("translation", translation)
-                    self.cached_count += 1
-                    continue
+        try:
+            for relative_path, units in project.files.items():
+                current_file = relative_path
+                skip_file = False
+                file_has_error = False
 
-                # Traduire automatiquement
-                self.translator.translate(unit)
-                unit.status = TranslationStatus.AUTO_TRANSLATED
+                for unit in units:
+                    processed_units += 1
+                    self._print_progress(processed_units, total_units, relative_path)
 
-                # Mode manuel : demander une revue
-                if not automatic:
-                    action = self.console.review(relative_path, unit)
-                    if action == ReviewAction.EDIT:
-                        self.console.edit(unit)
-                    elif action == ReviewAction.SKIP:
+                    # Vérifier si l'unité a déjà une traduction en mémoire
+                    translation = self.database.get_translation(unit.uid)
+                    if translation is not None:
+                        unit.translated_text = translation.get("translation", translation)
+                        self.cached_count += 1
                         continue
-                    elif action == ReviewAction.NEXT_FILE:
-                        skip_file = True
-                        break
-                    elif action == ReviewAction.QUIT:
-                        self.database.save()
-                        project.cached_count = self.cached_count
-                        project.translated_count = self.translated_count
-                        return project
 
-                # Mettre à jour la base de données avec la nouvelle traduction
-                self.database.update(unit)
-                self.translated_count += 1
+                    # Traduire automatiquement
+                    try:
+                        self.translator.translate(unit)
+                        unit.status = TranslationStatus.AUTO_TRANSLATED
+                    except KeyboardInterrupt:
+                        self._handle_unexpected_error(project, current_file)
+                        raise
+                    except Exception as error:
+                        print(
+                            f"{Config.RED}Erreur de traduction : {unit.source_text}"
+                            f" -> {error}{Config.RESET}"
+                        )
+                        file_has_error = True
+                        continue
 
-            if skip_file:
-                continue
+                    # Mode manuel : demander une revue
+                    if not automatic:
+                        action = self.console.review(relative_path, unit)
+                        if action == ReviewAction.EDIT:
+                            self.console.edit(unit)
+                        elif action == ReviewAction.SKIP:
+                            continue
+                        elif action == ReviewAction.NEXT_FILE:
+                            skip_file = True
+                            break
+                        elif action == ReviewAction.QUIT:
+                            self._handle_unexpected_error(project, current_file)
+                            project.cached_count = self.cached_count
+                            project.translated_count = self.translated_count
+                            return project
+
+                    # Mettre à jour la base de données avec la nouvelle traduction
+                    self.database.update(unit)
+                    self.database.save()
+                    self.translated_count += 1
+
+                if not skip_file:
+                    self._persist_file_progress(project, relative_path)
+                    if workshop_gen and workshop_mod_dir:
+                        workshop_gen.copy_translated_file(relative_path)
+                        workshop_gen.generate_loading_order(
+                            str(workshop_mod_dir),
+                            [Config.WORKSHOP_MOD_NAME],
+                        )
+
+                if file_has_error and relative_path not in project.failed_files:
+                    project.failed_files.append(relative_path)
+
+                if skip_file:
+                    continue
+        except Exception:
+            self._handle_unexpected_error(project, current_file)
+            raise
+
         print()
 
-        # Sauvegarder la base de données à la fin
+        # Sauvegarder la base de données finale
         self.database.save()
 
-        # Écrire les fichiers traduits
+        # Écrire les fichiers traduits finaux
         self.writer.write(project, Config.OUTPUT_PATH)
 
-        # Générer le mod Workshop si demandé
-        if generate_workshop:
+        # Générer le mod Workshop si demandé and not already built for incremental auto/data
+        if generate_workshop and not workshop_gen:
             self._generate_workshop(project)
 
         project.cached_count = self.cached_count
         project.translated_count = self.translated_count
         return project
+
+    def _persist_file_progress(self, project: TranslationProject, relative_path: str) -> None:
+        """Sauvegarde les progrès pour un fichier partiellement ou totalement traité."""
+        try:
+            self.writer.write_file(project, relative_path, Config.OUTPUT_PATH)
+            print()
+            print(
+                f"{Config.GREEN}[INCR] Fichier sauvegardé : {relative_path}{Config.RESET}"
+            )
+        except Exception:
+            pass
+
+    def _handle_unexpected_error(
+        self, project: TranslationProject, current_file: str
+    ) -> None:
+        """Sauvegarde le projet en cas d'erreur imprévue."""
+        self.database.save()
+        if current_file:
+            self._persist_file_progress(project, current_file)
 
     def _generate_workshop(self, project: TranslationProject) -> None:
         """Génère un mod Workshop à partir du projet traduit."""
