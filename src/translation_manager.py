@@ -92,9 +92,10 @@ class TranslationManager:
                 )
 
         resume_file = None
+        resume_uid = None
         resume_started = True
         if resume:
-            resume_file = self._determine_resume_file()
+            resume_file, resume_uid, processed_units = self._determine_resume_state(project)
             if resume_file:
                 resume_started = False
                 print(
@@ -107,6 +108,8 @@ class TranslationManager:
                     if relative_path != resume_file:
                         continue
                     resume_started = True
+                    if resume_uid is not None:
+                        processed_units += self._find_unit_index(units, resume_uid)
 
                 current_file = relative_path
                 skip_file = False
@@ -193,23 +196,29 @@ class TranslationManager:
         project.translated_count = self.translated_count
         return project
 
-    def _determine_resume_file(self) -> str | None:
-        """Détermine le fichier à partir duquel reprendre en utilisant la dernière entrée BDD."""
+    def _determine_resume_state(self, project: TranslationProject) -> tuple[str | None, str | None, int]:
+        """Détermine le fichier, le dernier uid et le nombre d'unités déjà traitées."""
         last_uid, last_entry = self.database.get_last_entry()
         if not last_entry:
-            return None
+            return None, None, 0
 
         relative_path = last_entry.get("relative_path")
         json_path = last_entry.get("path")
         translation = last_entry.get("translation")
         if not relative_path or not json_path:
-            return None
+            return None, None, 0
+
+        units_before = 0
+        for path, units in project.files.items():
+            if path == relative_path:
+                break
+            units_before += len(units)
 
         output_file = Path(Config.OUTPUT_PATH) / relative_path
         if output_file.exists():
             try:
                 if self._output_contains_translation(output_file, json_path, translation):
-                    return relative_path
+                    return relative_path, last_uid, units_before
                 print(
                     f"{Config.RED}La dernière entrée de la BDD n'a pas été retrouvée dans le fichier de sortie {output_file}."
                     f" Reprise depuis le fichier source {relative_path}.{Config.RESET}"
@@ -217,7 +226,19 @@ class TranslationManager:
             except Exception:
                 pass
 
-        return relative_path
+        # Position dans le fichier de reprise pour la dernière uid
+        if relative_path in project.files:
+            resume_index = self._find_unit_index(project.files[relative_path], last_uid)
+            units_before += resume_index
+
+        return relative_path, last_uid, units_before
+
+    def _find_unit_index(self, units: list[TextUnit], resume_uid: str) -> int:
+        """Retourne le nombre d'unités déjà traitées dans le fichier de reprise."""
+        for index, unit in enumerate(units):
+            if unit.uid == resume_uid:
+                return index
+        return 0
 
     def _output_contains_translation(
         self, output_file: Path, json_path: str, translation: str

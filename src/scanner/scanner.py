@@ -34,7 +34,6 @@ class Scanner:
         "slots",
         "strings",       # Chaînes de texte générales
         "tips",
-        ""
     }
 
     # Répertoires à exclure (technique, pas de texte à traduire)

@@ -39,16 +39,35 @@ class OstranautsRules:
 
     # Clés JSON qui NE DOIVENT JAMAIS être traduites
     NON_TRANSLATABLE_KEYS = {
+        "mapModeSwitches",
+        "mapGUIPropMaps",
+        "strColor",
+        "LootCondsUs",
+        "LootCondsThem",
+        "CTTestUs",
+        "CTTestThem",
+        "PSpecTestThem",
+        "PSpecTest3rd",
+        "strLootRELChangeUsSeesThem",
+        "strLootRELChangeUsSees3rd",
+        "aAModesAddedThem",
+        "aInverse",
+        "aSocketForbids",
         "strName",  # IMPORTANT: strName est un identifiant, NE PAS TRADUIRE
         "strID",
         "strType",
+        "strPortraitImg",
         "strInternalName",
         "strTag",
         "strCategory",
+        "strCondLoot",
+        "strImgNorm",
+        "strCOBase",
         "strPath",
         "strIcon",
         "strImg",
         "strImgDamaged",
+        "strLootClientFaction",
         "strSound",
         "type",
         "subtype",
@@ -57,16 +76,13 @@ class OstranautsRules:
     # Fichiers ou dossiers à exclure de la traduction
     EXCLUDED_FILES = {
         "ai_training/ai_training.json",
-        "ai_training/robots.js",
-        "ai_training/"
-        "tokens/verbs.json",
-        "tokens/names.json",
-        "tokens/placeholders.json",
-        "tokens/",
+        "ai_training/robots.json",
+        "ai_training/",
         "audioemitters/", # Émetteurs sonores (technique)
         "colors/",        # Couleurs (technique)
         "condowners/",      # template des objets
         "condtrigs/",
+        "cooverlays/cooverlays_cargopods.json",
         "chargeprofiles/",
         "crewskins/",
         "crime/",
@@ -97,11 +113,14 @@ class OstranautsRules:
         "slot_effects/",
         "starsystem/",    # Système stellaire (technique)
         "tickers/",       # Minutages (technique)
-        "tokens/",        # Dictionnaires techniques (verbes, noms)
+        "tokens/verbs.json",
+        "tokens/names.json",
+        "tokens/placeholders.json",
+        "tokens/",       # Dictionnaires techniques (verbes, noms)
         "traitscores/",   # Scores de traits (technique)
         "transit/",
         "tsv/",
-        "wounds"
+        "wounds/",
         "zone_triggers/",
     }
 

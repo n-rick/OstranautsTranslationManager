@@ -18,6 +18,9 @@ class JsonExtractor:
                 relative_path: str,
                 ) -> list[TextUnit]:
         """Lit un fichier JSON et retourne la liste des unités de texte extraites."""
+        if self.rules.should_exclude_file(relative_path):
+            return []
+
         with open(file_path, "r", encoding="utf-8-sig") as file:
             content = file.read()
 
