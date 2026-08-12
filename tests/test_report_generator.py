@@ -28,6 +28,7 @@ def test_generate_report_single_file(tmp_path):
         translated_count=1,
         files={"file.json": ["unit1"]},
     )
+    project.root_directory = "/tmp/data"
 
     gen = ReportGenerator()
     report_path = gen.generate(project, automatic=False, generated_workshop=False)
@@ -37,6 +38,8 @@ def test_generate_report_single_file(tmp_path):
 
     assert "Traitement automatique: Non" in content
     assert "Mod Workshop généré: Non" in content
+    assert "Périmètre traité: Fichier unique" in content
+    assert "- file.json" in content
     assert f"{Config.FILE_SCANNED} : 1" in content
     assert f"{Config.FROM_MEMORY} : 0" in content
     assert f"{Config.NEW_TRANSLATIONS} : 1" in content
@@ -82,6 +85,7 @@ def test_generate_report_auto_directory_with_mod(tmp_path):
         files=files,
         failed_files=["dir2/file2.json"],
     )
+    project.root_directory = "/tmp/data"
 
     gen = ReportGenerator()
     report_path = gen.generate(project, automatic=True, generated_workshop=True)
@@ -91,6 +95,9 @@ def test_generate_report_auto_directory_with_mod(tmp_path):
 
     assert "Traitement automatique: Oui" in content
     assert "Mod Workshop généré: Oui" in content
+    assert "Périmètre traité: Tout le répertoire data" in content
+    assert "dir1/file1.json" in content
+    assert "dir2/file2.json" in content
 
     # Vérifie le nombre total d'unités de texte
     total_units = sum(len(v) for v in files.values())

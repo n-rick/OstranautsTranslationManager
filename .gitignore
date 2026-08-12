@@ -224,3 +224,5 @@ output/
 ./output/
 workshop/
 ./workshop/
+./reports
+reports/

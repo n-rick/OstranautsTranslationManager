@@ -48,6 +48,21 @@ class ReportGenerator:
         lines.append(f"Traitement automatique: {'Oui' if automatic else 'Non'}")
         lines.append(f"Mod Workshop généré: {'Oui' if generated_workshop else 'Non'}")
         lines.append("")
+
+        files = list(getattr(project, "files", {}).keys())
+        root_dir = getattr(project, "root_directory", None)
+        if len(files) == 1:
+            lines.append("Périmètre traité: Fichier unique")
+            lines.append(f" - {files[0]}")
+        else:
+            lines.append("Périmètre traité: Tout le répertoire data")
+            if root_dir:
+                lines.append(f" - Racine: {root_dir}")
+            lines.append(f" - Nombre de fichiers traités: {len(files)}")
+            for file_path in sorted(files):
+                lines.append(f"   - {file_path}")
+
+        lines.append("")
         lines.append(f"{Config.FILE_SCANNED} : {getattr(project, 'scanned_files', 0)}")
         lines.append(f"{Config.FROM_MEMORY} : {getattr(project, 'cached_count', 0)}")
         lines.append(f"{Config.NEW_TRANSLATIONS} : {getattr(project, 'translated_count', 0)}")

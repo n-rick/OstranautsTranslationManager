@@ -29,6 +29,7 @@ class OstranautsRules:
         "strFail",
         "strLog",
         "strNamePlural",
+        "aPhaseTitles",
     }
 
     # Clés JSON qui sont traduisibles dans les structures de override
@@ -118,6 +119,7 @@ class OstranautsRules:
         "tokens/placeholders.json",
         "tokens/",       # Dictionnaires techniques (verbes, noms)
         "traitscores/",   # Scores de traits (technique)
+        "interactions/plotIAs/",
         "transit/",
         "tsv/",
         "wounds/",

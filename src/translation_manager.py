@@ -1,5 +1,6 @@
 """Gestion du flux principal de traduction des unités de texte."""
 import json
+import re
 from pathlib import Path
 from src.database.database import Database
 from src.models.translation_project import TranslationProject
@@ -33,6 +34,23 @@ class TranslationManager:
         self.cached_count = 0
         self.translated_count = 0
         self._last_progress_length = 0
+        self._last_project = None
+
+    @staticmethod
+    def _has_protected_phase_tokens(text: str) -> bool:
+        """Vérifie si un texte contient des éléments qui doivent être recalculés.
+
+        STARTING et 'Return to' sont traités comme du texte protégé : les mots
+        exacts ne doivent pas être traduits, mais le reste de la phrase peut l'être.
+        """
+        if not isinstance(text, str):
+            return False
+
+        protected_pattern = re.compile(
+            r"\bSTARTING\b|\bRETURN\b|\bReturn\s+to\b|\bStart\s+to\b|\bSTART\b",
+            re.IGNORECASE,
+        )
+        return bool(protected_pattern.search(text))
 
     def run(
         self,
@@ -56,6 +74,28 @@ class TranslationManager:
         project = self.scanner.scan_file(file_path)
         return self._process_project(project, automatic, generate_workshop, resume)
 
+    def _determine_resume_file(self, project: TranslationProject | None = None) -> str | None:
+        """Compatibilité avec l'ancienne API de reprise.
+
+        Retourne le nom du fichier à partir duquel la reprise doit continuer.
+        """
+        if project is not None:
+            resume_file, _, _ = self._determine_resume_state(project)
+            return resume_file
+
+        if not self.database._loaded:
+            self.database.load()
+
+        last_uid, last_entry = self.database.get_last_entry()
+        if not last_entry:
+            return None
+
+        relative_path = last_entry.get("relative_path")
+        if relative_path:
+            return relative_path
+
+        return None
+
     def _process_project(
         self,
         project: TranslationProject,
@@ -64,6 +104,7 @@ class TranslationManager:
         resume: bool = False,
     ) -> TranslationProject:
         """Traite les unités du projet selon le mode choisi."""
+        self._last_project = project
         # Charger la base de données au début
         self.database.load()
 
@@ -119,8 +160,14 @@ class TranslationManager:
                     processed_units += 1
                     self._print_progress(processed_units, total_units, relative_path)
 
-                    # Vérifier si l'unité a déjà une traduction en mémoire
-                    translation = self.database.get_translation(unit.uid)
+                    # Vérifier si l'unité a déjà une traduction en mémoire.
+                    # Les textes protégés (STARTING / Return to) doivent être recalculés
+                    # pour garantir que les mots réservés ne soient ni traduits ni
+                    # réutilisés depuis la mémoire avec une ancienne forme.
+                    translation = None
+                    if not self._has_protected_phase_tokens(unit.source_text):
+                        translation = self.database.get_translation(unit.uid)
+
                     if translation is not None:
                         unit.translated_text = translation.get("translation", translation)
                         self.cached_count += 1

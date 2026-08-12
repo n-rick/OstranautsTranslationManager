@@ -102,5 +102,19 @@ class TestPlaceholderManager(unittest.TestCase):
         self.assertNotEqual(protected, text)
         self.assertEqual(restored, text)
 
+    def test_protects_starting_and_return_tokens(self):
+        text = "STARTING: Return to [contact] with [target]."
+
+        protected = self.manager.protect(text)
+        restored = self.manager.restore(protected)
+
+        self.assertNotIn("STARTING", protected)
+        self.assertNotIn("Return", protected)
+        self.assertNotIn("Return to", protected)
+        self.assertNotIn(" to ", protected)
+        self.assertNotIn("[contact]", protected)
+        self.assertNotIn("[target]", protected)
+        self.assertEqual(restored, text)
+
 if __name__ == '__main__':
     unittest.main()
