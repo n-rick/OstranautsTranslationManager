@@ -2,7 +2,7 @@
 
 **Application Python pour maintenir la traduction française d'Ostranauts.**
 
-📌 **Version actuelle** : V1.0
+📌 **Version actuelle** : V1.2.0
 🟢 **Statut** : En développement actif
 🎮 **Compatibilité** : Ostranauts v1.0.0
 
