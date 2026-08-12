@@ -4,6 +4,7 @@ from pathlib import Path
 from src.config.config import Config
 from src.models.text_unit import TextUnit
 from src.models.translation_project import TranslationProject
+from src.models.unit_type import UnitType
 from src.rules.ostranauts_rules import OstranautsRules
 
 class JsonWriter:
@@ -17,6 +18,7 @@ class JsonWriter:
     ) -> None:
         """Écrit tous les fichiers du projet en conservant leur chemin relatif."""
         output_path = Path(output_directory)
+        output_path.mkdir(parents=True, exist_ok=True)
 
         for relative_path, units in project.files.items():
             self.write_file(project, relative_path, output_directory)
@@ -29,11 +31,27 @@ class JsonWriter:
             print(f"{Config.RED}[SKIP] Exclusion du fichier: {relative_path}{Config.RESET}")
             return
 
+        special_fields = {
+            "aValues",
+            "aOverrideValues",
+            "aOverrideTriggerIAValues",
+            "aPhaseTitles",
+        }
+
         units = [
             unit
             for unit in project.files.get(relative_path, [])
-            if self.rules.is_translatable(unit.field, unit.source_text)
-            and unit.translated_text
+            if unit.translated_text
+            and (
+                self.rules.is_translatable(unit.field, unit.source_text)
+                or unit.type in {
+                    UnitType.A_VALUES,
+                    UnitType.A_OVERRIDE_VALUES,
+                    UnitType.A_OVERRIDE_TRIGGER_IA_VALUES,
+                    UnitType.A_PHASE_TITLES,
+                }
+                or unit.field in special_fields
+            )
         ]
 
         if not units:

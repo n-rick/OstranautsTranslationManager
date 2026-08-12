@@ -15,6 +15,7 @@ Première version stable du projet.
 - Exclusion des fichiers techniques et des dossiers non traduisibles
 
 ### How to use
+- Utilisateur final : `python main.py`
 - Menu interactif : `python src/main.py`
 - Reprise : `python src/main.py --resume --path /chemin/vers/Ostranauts_Data/StreamingAssets/data --generate-workshop`
 - Fichier unique : `python src/main.py --resume --file /chemin/vers/ads/ads.json`

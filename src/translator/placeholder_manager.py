@@ -10,25 +10,28 @@ class PlaceholderManager:
 
     TAG_PATTERN = re.compile(r"</?[^>]+>")
 
+    RESERVED_PATTERN = re.compile(
+        r"\b(?:STARTING|Return\s+to|Start\s+to|START|RETURN|Return|Start)\b",
+        re.IGNORECASE,
+    )
+
     def __init__(self) -> None:
         """Initialise la structure de stockage des placeholders."""
         self.placeholders: dict[str, str] = {}
 
     def protect(self, text: str) -> str:
-        """Remplace les placeholders par des tokens temporaires dans le texte."""
+        """Remplace les placeholders et mots réservés par des tokens temporaires."""
         self.placeholders.clear()
 
         def replace(match):
             placeholder = match.group(0)
-
             token = f"__PH_{len(self.placeholders):04d}__"
-
             self.placeholders[token] = placeholder
-
             return token
 
         text = self.PATTERN.sub(replace, text)
         text = self.TAG_PATTERN.sub(replace, text)
+        text = self.RESERVED_PATTERN.sub(replace, text)
 
         return text
 

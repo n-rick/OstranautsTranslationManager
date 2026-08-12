@@ -12,13 +12,19 @@ authors = [
     { name = "Votre Nom", email = "votre.email@example.com" }
 ]
 dependencies = [
-    # Ajoutez vos dépendances de production ici (ex: "requests", "pandas")
+    "python-dotenv>=1.0.0",
+    "googletrans==4.0.0-rc1",
+    "requests>=2.31.0",
+    "tqdm>=4.70.0",
 ]
+
+[project.scripts]
+ostranauts-translation-manager = "src.main:main"
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
-    "pytest-cov>=4.1",  # Pour mesurer la couverture de code
+    "pytest-cov>=4.1",
 ]
 
 [tool.pytest.ini_options]

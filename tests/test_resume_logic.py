@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from src.database.database import Database
+from src.models.text_unit import TextUnit
 from src.translation_manager import TranslationManager
 from src.scanner.scanner import Scanner
 from src.translator.translator import Translator
@@ -141,3 +142,45 @@ def test_recover_corrupt_database(tmp_path):
     assert "uid2" not in db.translations or db.translations["uid2"]["relative_path"] == "b.json"
     assert db_path.exists()
     assert db_path.with_suffix(".json.corrupt.bak").exists()
+
+def test_resume_ignores_cached_protected_tokens(tmp_path):
+    source = "STARTING: Return to [contact] with [target]."
+    uid = "uid-protected"
+
+    project = DummyProject(str(tmp_path), {
+        "a.json": [
+            TextUnit(
+                uid=uid,
+                relative_path="a.json",
+                json_path="$.aPhaseTitles[0]",
+                field="aPhaseTitles",
+                source_text=source,
+            )
+        ]
+    })
+
+    db_path = tmp_path / "translation_memory.json"
+    db = Database(str(db_path))
+    db.translations = {
+        uid: {
+            "source": source,
+            "translation": "DÉPART: Retour vers [contact] avec [target].",
+            "field": "aPhaseTitles",
+            "path": "$.aPhaseTitles[0]",
+            "relative_path": "a.json",
+        }
+    }
+    db._loaded = True
+
+    manager = TranslationManager(
+        scanner=DummyScanner(project),
+        database=db,
+        translator=DummyTranslator(),
+        console=DummyConsole(),
+        writer=DummyWriter(),
+    )
+
+    manager._process_project(project, automatic=True, generate_workshop=False, resume=False)
+
+    assert manager.cached_count == 0
+    assert project.files["a.json"][0].translated_text == f"translated:{source}"
