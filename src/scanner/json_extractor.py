@@ -18,6 +18,9 @@ class JsonExtractor:
                 relative_path: str,
                 ) -> list[TextUnit]:
         """Lit un fichier JSON et retourne la liste des unités de texte extraites."""
+        if self.rules.should_exclude_file(relative_path):
+            return []
+
         with open(file_path, "r", encoding="utf-8-sig") as file:
             content = file.read()
 
@@ -31,7 +34,24 @@ class JsonExtractor:
 
                 lines.append(line)
 
-            data = json.loads("\n".join(lines))
+            joined = "\n".join(lines)
+            try:
+                data = json.loads(joined)
+            except Exception as e:
+                # Tentative de nettoyage: remplacer les caractères de contrôle
+                # non autorisés par un espace, puis réessayer.
+                cleaned = []
+                for ch in joined:
+                    # Autoriser tab, LF, CR (\t, \n, \r) et les caractères >= espace
+                    if ch in ("\t", "\n", "\r") or ord(ch) >= 0x20:
+                        cleaned.append(ch)
+                    else:
+                        cleaned.append(" ")
+                try:
+                    data = json.loads("".join(cleaned))
+                except Exception:
+                    # Propager l'erreur initiale si l'analyse échoue toujours
+                    raise e
 
         units: list[TextUnit] = []
 

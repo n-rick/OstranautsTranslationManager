@@ -85,14 +85,25 @@ Option 1 : Menu interactif
 python src/main.py
 ```
 
+Option 2 : Mode commande
+```bash
+python src/main.py --resume --path /chemin/vers/Ostranauts_Data/StreamingAssets/data --generate-workshop
+```
+
+Option 3 : Reprendre un fichier unique
+```bash
+python src/main.py --resume --file /chemin/vers/ads/ads.json
+```
 
 ## **Fonctionnalités :**
 
 Choisir entre traduire tous les fichiers ou un fichier spécifique
 Mode automatique (traduction sans validation) ou manuel (validation interactive)
 Génération optionnelle d’un mod Workshop
+Reprise automatique à partir de la mémoire de traduction et des fichiers déjà générés
+Sauvegarde incrémentale après chaque fichier traité
 
-Option 2 : Générer un mod Workshop directement
+Option 4 : Générer un mod Workshop directement
 
 ```bash
 python build_workshop.py

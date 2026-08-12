@@ -42,12 +42,7 @@ class WorkshopGenerator:
 
         # Copier les fichiers traduits depuis le projet
         # Les fichiers sont déjà écrits dans OUTPUT_PATH par JsonWriter
-        repo_root = Path(__file__).resolve().parents[2]
-        output_path = (
-            Config.OUTPUT_PATH
-            if Config.OUTPUT_PATH.is_absolute()
-            else repo_root / Config.OUTPUT_PATH
-        )
+        output_path = self._resolve_output_path()
 
         for relative_path, units in project.files.items():
             source_file = output_path / relative_path
@@ -65,7 +60,17 @@ class WorkshopGenerator:
         self._generate_mod_info(mod_dir)
         self._copy_preview_image(mod_dir)
 
+        self.mod_dir = mod_dir
         return mod_dir
+
+    def _resolve_output_path(self) -> Path:
+        """Résout le chemin absolu de OUTPUT_PATH."""
+        repo_root = Path(__file__).resolve().parents[2]
+        return (
+            Config.OUTPUT_PATH
+            if Config.OUTPUT_PATH.is_absolute()
+            else repo_root / Config.OUTPUT_PATH
+        )
 
     def _generate_mod_info(self, mod_dir: Path) -> None:
         """Génère le fichier mod_info.json."""
@@ -128,3 +133,15 @@ class WorkshopGenerator:
         loading_order_path = Path(mods_dir).parent / "loading_order.json"
         with open(loading_order_path, "w", encoding="utf-8") as f:
             json.dump(loading_order, f, ensure_ascii=False, indent=4)
+
+    def copy_translated_file(self, relative_path: str) -> None:
+        """Copie un fichier JSON déjà traduit dans le dossier du mod Workshop."""
+        if not hasattr(self, "mod_dir"):
+            return
+
+        source_file = self._resolve_output_path() / relative_path
+        dest_file = self.mod_dir / "data" / relative_path
+        if source_file.exists():
+            dest_file.parent.mkdir(parents=True, exist_ok=True)
+            import shutil
+            shutil.copy2(source_file, dest_file)

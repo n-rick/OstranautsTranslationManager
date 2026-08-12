@@ -44,6 +44,9 @@ class GoogleTranslatorService:
                 f" -> {error}"
                 f"{Config.RESET}"
             )
+            unit.translated_text = unit.source_text
+            unit.status = TranslationStatus.NEW
+            return unit
 
         # Restaurer les placeholders dans le texte traduit.
         unit.translated_text = self.placeholder_manager.restore(
