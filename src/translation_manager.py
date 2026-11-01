@@ -9,7 +9,7 @@ from src.scanner.scanner import Scanner
 from src.config.config import Config
 from src.ui.review_action import ReviewAction
 from src.ui.console import ConsoleUI
-from src.translator.translator import Translator
+from src.translator.translator import TranslationServiceError, Translator
 from src.models.text_unit import TextUnit
 from src.writer.json_writer import JsonWriter
 from src.workshop.workshop import WorkshopGenerator
@@ -143,6 +143,7 @@ class TranslationManager:
                     f"{Config.GREEN}Reprise détectée à partir de la dernière entrée de la BDD : {resume_file}{Config.RESET}"
                 )
 
+        rate_limit_reached = False
         try:
             for relative_path, units in project.files.items():
                 if not resume_started:
@@ -180,6 +181,14 @@ class TranslationManager:
                     except KeyboardInterrupt:
                         self._handle_unexpected_error(project, current_file)
                         raise
+                    except TranslationServiceError as error:
+                        print(
+                            f"{Config.RED}Arrêt après erreur du service de traduction : "
+                            f"{error}{Config.RESET}"
+                        )
+                        file_has_error = True
+                        rate_limit_reached = True
+                        break
                     except Exception as error:
                         print(
                             f"{Config.RED}Erreur de traduction : {unit.source_text}"
@@ -223,6 +232,8 @@ class TranslationManager:
 
                 if skip_file:
                     continue
+                if rate_limit_reached:
+                    break
         except Exception:
             self._handle_unexpected_error(project, current_file)
             raise

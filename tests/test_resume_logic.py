@@ -5,7 +5,7 @@ from src.database.database import Database
 from src.models.text_unit import TextUnit
 from src.translation_manager import TranslationManager
 from src.scanner.scanner import Scanner
-from src.translator.translator import Translator
+from src.translator.translator import TranslationRateLimitError, Translator
 from src.ui.console import ConsoleUI
 from src.writer.json_writer import JsonWriter
 
@@ -14,6 +14,15 @@ class DummyTranslator(Translator):
     def translate(self, unit):
         unit.translated_text = f"translated:{unit.source_text}"
         return unit.translated_text
+
+
+class RateLimitedTranslator(Translator):
+    def __init__(self):
+        self.calls = 0
+
+    def translate(self, unit):
+        self.calls += 1
+        raise TranslationRateLimitError("quota exceeded")
 
 
 class DummyScanner(Scanner):
@@ -184,3 +193,28 @@ def test_resume_ignores_cached_protected_tokens(tmp_path):
 
     assert manager.cached_count == 0
     assert project.files["a.json"][0].translated_text == f"translated:{source}"
+
+
+def test_rate_limit_stops_translation_and_marks_file_failed(tmp_path):
+    project = DummyProject(
+        str(tmp_path),
+        {
+            "interactions.json": [
+                TextUnit("1", "interactions.json", "$.title", "strTitle", "First"),
+                TextUnit("2", "interactions.json", "$.other", "strTitle", "Second"),
+            ]
+        },
+    )
+    translator = RateLimitedTranslator()
+    manager = TranslationManager(
+        scanner=DummyScanner(project),
+        database=Database(str(tmp_path / "translation_memory.json")),
+        translator=translator,
+        console=DummyConsole(),
+        writer=DummyWriter(),
+    )
+
+    manager._process_project(project, automatic=True)
+
+    assert translator.calls == 1
+    assert project.failed_files == ["interactions.json"]

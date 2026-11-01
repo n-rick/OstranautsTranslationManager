@@ -4,7 +4,7 @@ from src.config.config import Config
 from src.database.database import Database
 from src.scanner.scanner import Scanner
 from src.ui.console import ConsoleUI
-from src.translator.google_translator import GoogleTranslatorService
+from src.translator.deepl_translator import DeepLTranslatorService
 from src.translation_manager import TranslationManager
 from src.writer.json_writer import JsonWriter
 from src.reports.reports import ReportGenerator
@@ -70,10 +70,16 @@ def main() -> None:
             print(f"\n\n {Config.RED} ⚠️ Arrêt demandé. {Config.RESET}")
             return
 
+    try:
+        translator = DeepLTranslatorService()
+    except ValueError as error:
+        print(f"{Config.RED}{error}{Config.RESET}")
+        return
+
     manager = TranslationManager(
         scanner=Scanner(),
         database=Database(Config.DATABASE_PATH),
-        translator=GoogleTranslatorService(),
+        translator=translator,
         console=ConsoleUI(),
         writer=JsonWriter(),
     )
