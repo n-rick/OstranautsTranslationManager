@@ -2,6 +2,15 @@
 
 Toutes les modifications notables apportées à ce projet doivent être documentées dans ce fichier.
 
+## [1.3.0] - 2026-11-02
+### Added
+- Traduction via l’API officielle DeepL, configurée avec `DEEPL_AUTH_KEY`.
+- Tests du service DeepL, incluant la protection des placeholders et les erreurs API.
+
+### Fixed
+- Lecture et écriture des fichiers du jeu contenant des retours à la ligne littéraux dans les chaînes JSON.
+- Arrêt propre de la traduction lorsqu’une erreur persistante est renvoyée par le service.
+
 ## [1.2.0] - 2026-08-12
 ### Added
 - Point d'entrée unique via `python main.py` pour un lancement utilisateur simple.

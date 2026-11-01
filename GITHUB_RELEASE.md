@@ -1,20 +1,17 @@
-# Release Draft for v1.2.0
+# Release Draft for v1.3.0
 
 ## Title
-Ostranauts Translation Manager v1.2.0
+Ostranauts Translation Manager v1.3.0
 
 ## Description
-Version de correctifs et d’ergonomie utilisateur après la première release v1.0.0.
+Cette version adopte l’API officielle DeepL et améliore la compatibilité avec les fichiers de données Ostranauts contenant des chaînes multilignes.
 
 ### Highlights
-- Lancement simplifié via `python main.py`
-- Menu console guidé pour choisir le traitement complet ou un fichier unique
-- Mémoire de traduction persistante dans `database/translation_memory.json`
-- Reprise incrémentale (`--resume`) sans réappliquer les traductions protégées de façon invalide
-- Protection des phrases et tokens réservés comme `STARTING` et `Return to`
-- Rapport détaillé indiquant le périmètre traité (fichier unique ou répertoire complet)
-- Génération de mod Workshop compatible Steam avec `loading_order.json`
-- Exclusion des fichiers techniques et des dossiers non traduisibles
+- Traduction automatique via le SDK officiel DeepL, avec clé configurée dans `.env` (`DEEPL_AUTH_KEY`).
+- Protection et restauration des placeholders pendant la traduction.
+- Lecture des chaînes JSON contenant des retours à la ligne bruts dans les fichiers du jeu.
+- Arrêt propre et signalement du fichier en échec en cas d’erreur persistante du fournisseur.
+- Couverture de tests hors ligne pour le service DeepL et les JSON multilignes.
 
 ### How to use
 - Utilisateur final : `python main.py`
@@ -24,5 +21,6 @@ Version de correctifs et d’ergonomie utilisateur après la première release v
 - Générer un mod : `python build_workshop.py`
 
 ### Notes
+- Une clé API DeepL valide est requise pour les nouvelles traductions.
 - Le dossier `output/` contient les fichiers JSON traduits.
 - Le dossier `workshop/` contient le mod Workshop prêt à être publié.
