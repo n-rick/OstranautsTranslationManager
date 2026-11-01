@@ -36,7 +36,7 @@ class JsonExtractor:
 
             joined = "\n".join(lines)
             try:
-                data = json.loads(joined)
+                data = json.loads(joined, strict=False)
             except Exception as e:
                 # Tentative de nettoyage: remplacer les caractères de contrôle
                 # non autorisés par un espace, puis réessayer.
@@ -48,7 +48,7 @@ class JsonExtractor:
                     else:
                         cleaned.append(" ")
                 try:
-                    data = json.loads("".join(cleaned))
+                    data = json.loads("".join(cleaned), strict=False)
                 except Exception:
                     # Propager l'erreur initiale si l'analyse échoue toujours
                     raise e
