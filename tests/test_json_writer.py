@@ -54,6 +54,35 @@ class TestJsonWriter(unittest.TestCase):
             result = json.load(file)
 
         self.assertEqual(result["strTitle"], "Réparer", "test avec chaîne simple")
+
+    def test_write_multiline_json_string(self):
+        source_text = "First line\n\nSecond line"
+        translated_text = "Première ligne\n\nDeuxième ligne"
+        source_content = '{"strDesc": "First line\n\nSecond line"}'
+        (self.input_dir / "sample.json").write_text(
+            source_content,
+            encoding="utf-8-sig",
+        )
+
+        project = TranslationProject()
+        project.root_directory = str(self.input_dir)
+        project.files["sample.json"] = [
+            TextUnit(
+                uid="multiline",
+                relative_path="sample.json",
+                json_path="$.strDesc",
+                field="strDesc",
+                source_text=source_text,
+                translated_text=translated_text,
+            )
+        ]
+
+        self.writer.write(project, str(self.output_dir))
+
+        with open(self.output_dir / "sample.json", encoding="utf-8-sig") as file:
+            result = json.load(file)
+
+        self.assertEqual(result["strDesc"], translated_text)
         
 
     def test_write_nested_field(self):

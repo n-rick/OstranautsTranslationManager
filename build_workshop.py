@@ -4,7 +4,7 @@ from pathlib import Path
 from src.config.config import Config
 from src.scanner.scanner import Scanner
 from src.database.database import Database
-from src.translator.google_translator import GoogleTranslatorService
+from src.translator.deepl_translator import DeepLTranslatorService
 from src.ui.console import ConsoleUI
 from src.writer.json_writer import JsonWriter
 from src.translation_manager import TranslationManager
@@ -15,10 +15,16 @@ def build_workshop_mod():
     print(f"{Config.GREEN}🚀 Début de la génération du mod Workshop... {Config.RESET}")
 
     # Initialiser les composants
+    try:
+        translator = DeepLTranslatorService()
+    except ValueError as error:
+        print(f"{Config.RED}{error}{Config.RESET}")
+        return
+
     manager = TranslationManager(
         scanner=Scanner(),
         database=Database(Config.DATABASE_PATH),
-        translator=GoogleTranslatorService(),
+        translator=translator,
         console=ConsoleUI(),
         writer=JsonWriter(),
     )

@@ -12,7 +12,7 @@
 
 ✅ **Scan intelligent** des fichiers JSON du jeu
 ✅ **Détection automatique** des champs traduisibles (strDesc, strTitle, strTooltip, etc.)
-✅ **Traduction automatique** via Google Translate
+✅ **Traduction automatique** via l'API officielle DeepL
 ✅ **Mémoire de traduction** pour éviter de re-traduire
 ✅ **Interface console** pour valider/éditer les traductions
 ✅ **Génération de mod Workshop** pour Steam
@@ -30,7 +30,7 @@ OstranautsTranslationManager/
 │   ├── models/          # Modèles (TextUnit, TranslationProject, etc.)
 │   ├── rules/           # Règles de détection des textes traduisibles
 │   ├── scanner/         # Scan des fichiers JSON
-│   ├── translator/      # Services de traduction (Google Translate)
+│   ├── translator/      # Services de traduction (DeepL)
 │   ├── ui/             # Interface utilisateur (console)
 │   ├── workshop/        # Génération des mods Workshop
 │   └── writer/          # Écriture des fichiers traduits
@@ -75,6 +75,12 @@ cp .env.example .env
 ### Éditer .env avec tes chemins (exemple pour Windows)
 
 OSTRANAUTS_DATA_PATH=C:\\Steam\\steamapps\\common\\Ostranauts\\Ostranauts_Data\\StreamingAssets\\data
+
+Ajoute également ta clé API DeepL dans le fichier `.env` :
+
+```dotenv
+DEEPL_AUTH_KEY=ta-cle-api-deepl
+```
 
 
 

@@ -11,6 +11,7 @@ class OstranautsRules:
     TRANSLATABLE_KEYS = {
         "strTitle",
         "strDesc",
+        "strDescription",
         "strTooltip",
         "strBody",
         "strMainText",
@@ -119,7 +120,6 @@ class OstranautsRules:
         "tokens/placeholders.json",
         "tokens/",       # Dictionnaires techniques (verbes, noms)
         "traitscores/",   # Scores de traits (technique)
-        "interactions/plotIAs/",
         "transit/",
         "tsv/",
         "wounds/",
@@ -174,6 +174,63 @@ class OstranautsRules:
         self, values: list, path: str, relative_path: str
     ) -> list[TextUnit]:
         units: list[TextUnit] = []
+        # Certaines définitions (ex: conditions_simple) utilisent des groupes
+        # de 7 éléments: [key, strNameFriendly, strDesc, nDisplaySelf, nDisplayOther, strColor, bInvert]
+        # Détecter ce format et extraire à la fois `strNameFriendly` (i+1)
+        # et `strDesc` (i+2). Sinon, conserver le comportement historique
+        # (paires key/value en pas de 2).
+        is_group_of_7 = False
+        if len(values) >= 7:
+            # vérifier qu'au moins le premier groupe ressemble au pattern attendu
+            try:
+                if (
+                    isinstance(values[0], str)
+                    and isinstance(values[1], str)
+                    and isinstance(values[2], str)
+                ):
+                    is_group_of_7 = True
+            except Exception:
+                is_group_of_7 = False
+
+        if is_group_of_7:
+            for index in range(0, len(values), 7):
+                # protéger contre des listes tronquées
+                if index + 2 >= len(values):
+                    break
+                key = values[index]
+                name_friendly = values[index + 1]
+                desc = values[index + 2]
+                if isinstance(name_friendly, str):
+                    uid = hashlib.sha1(
+                        f"{relative_path}:{path}[{index + 1}]".encode("utf-8")
+                    ).hexdigest()
+                    units.append(
+                        TextUnit(
+                            uid=uid,
+                            relative_path=relative_path,
+                            json_path=f"{path}[{index + 1}]",
+                            field="aValues",
+                            source_text=name_friendly,
+                            type=UnitType.A_VALUES,
+                        )
+                    )
+                if isinstance(desc, str):
+                    uid = hashlib.sha1(
+                        f"{relative_path}:{path}[{index + 2}]".encode("utf-8")
+                    ).hexdigest()
+                    units.append(
+                        TextUnit(
+                            uid=uid,
+                            relative_path=relative_path,
+                            json_path=f"{path}[{index + 2}]",
+                            field="aValues",
+                            source_text=desc,
+                            type=UnitType.A_VALUES,
+                        )
+                    )
+            return units
+
+        # Comportement historique: paires key/value
         for index in range(0, len(values) - 1, 2):
             key = values[index]
             value = values[index + 1]
@@ -181,6 +238,7 @@ class OstranautsRules:
                 continue
             if not isinstance(value, str):
                 continue
+            # garder la restriction originale sur les clés 100% majuscules
             if not key.isupper():
                 continue
             uid = hashlib.sha1(

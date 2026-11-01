@@ -50,6 +50,7 @@ class Config:
     # Langues
     SOURCE_LANGUAGE = os.getenv("SOURCE_LANGUAGE", "en")
     TARGET_LANGUAGE = os.getenv("TARGET_LANGUAGE", "fr")
+    DEEPL_AUTH_KEY = os.getenv("DEEPL_AUTH_KEY", "")
 
     # Messages UI
     FILE_SCANNED = os.getenv(

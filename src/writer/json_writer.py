@@ -79,7 +79,7 @@ class JsonWriter:
                 continue
             lines.append(line)
 
-        data = json.loads("\n".join(lines))
+        data = json.loads("\n".join(lines), strict=False)
 
         # Appliquer les traductions
         for unit in units:
